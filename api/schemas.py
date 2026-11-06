@@ -21,8 +21,8 @@ class PlayerSummary(BaseModel):
 class StatContribution(BaseModel):
     field: str
     label: str
-    query_pct: float      # 0–1, mevki içi percentile
-    candidate_pct: float
+    query_pct: float | None      # 0–1, mevki içi percentile; None = ligde veri yok (örn. TFF'de xG)
+    candidate_pct: float | None
     contribution: float   # toplamı = benzerlik
 
 

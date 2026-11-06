@@ -15,8 +15,12 @@ def results_table(df: pd.DataFrame) -> str:
     return view[COLUMNS].to_string(index=False)
 
 
+def _pct(value: float) -> str:
+    return "—" if pd.isna(value) else f"{value * 100:.0f}"
+
+
 def _items(rows: pd.DataFrame) -> str:
-    return " · ".join(f"{r.label} {r.query_pct * 100:.0f}/{r.candidate_pct * 100:.0f}"
+    return " · ".join(f"{r.label} {_pct(r.query_pct)}/{_pct(r.candidate_pct)}"
                       for r in rows.itertuples())
 
 

@@ -12,7 +12,8 @@ const integer = new Intl.NumberFormat("tr-TR");
 
 export const money = (v) => (v == null ? "—" : `€${oneDecimal.format(v / 1e6)} M`);
 export const score = (v) => twoDecimals.format(v);
-export const pct = (v) => Math.round(v * 100);
+// null = ligde veri yok (örn. TFF 1. Lig'de xG)
+export const pct = (v) => (v == null ? "—" : Math.round(v * 100));
 export const int = (v) => (v == null ? "—" : integer.format(v));
 export const foot = (f) => ({ Left: "Sol ayak", Right: "Sağ ayak", Both: "İki ayaklı" })[f] ?? "Ayak bilinmiyor";
 export const monthYear = (d) =>

@@ -31,7 +31,8 @@ def player_summary(row: pd.Series) -> PlayerSummary:
 
 
 def contributions(explanation: pd.DataFrame) -> list[StatContribution]:
-    return [StatContribution(**r) for r in explanation.to_dict("records")]
+    return [StatContribution(**{k: _value(v) for k, v in r.items()})
+            for r in explanation.to_dict("records")]
 
 
 def common_and_different(explanation: pd.DataFrame) -> tuple[list, list]:

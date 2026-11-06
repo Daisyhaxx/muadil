@@ -10,15 +10,20 @@ const tableRows = (stats) =>
   stats.map((s) => `<tr><td>${esc(s.label)}</td><td class="num">${pct(s.query_pct)}</td>
     <td class="num">${pct(s.candidate_pct)}</td><td class="num">${score(s.contribution)}</td></tr>`).join("");
 
+// Oyunculardan birinin liginde verisi olmayan istatistik (örn. TFF'de xG) radarda çizilmez
+const hasBoth = (s) => s.query_pct != null && s.candidate_pct != null;
+
 export function renderCompare(section, data) {
   const { query: q, candidate: c, stats } = data;
   const ranked = [...stats].sort((a, b) => b.contribution - a.contribution);
   const common = ranked.slice(0, 5);
   const different = ranked.filter((s) => s.contribution < 0).slice(-3).reverse();
+  const missing = stats.filter((s) => !hasBoth(s)).map((s) => s.label);
+  const note = missing.length ? ` Veri yok, radarda gösterilmiyor: ${esc(missing.join(", "))}.` : "";
 
   section.innerHTML = `
     <h2>${esc(q.name)} – ${esc(c.name)} · benzerlik ${score(data.similarity)}</h2>
-    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına. Değerler: sorgu / aday.</p>
+    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına. Değerler: sorgu / aday.${note}</p>
     <div class="legend">
       <span><i class="swatch series-1"></i>${esc(q.name)}</span>
       <span><i class="swatch series-2"></i>${esc(c.name)}</span>
@@ -36,6 +41,6 @@ export function renderCompare(section, data) {
         <tbody>${tableRows(stats)}</tbody>
       </table>
     </details>`;
-  renderRadar(section.querySelector(".radar-wrap"), stats, [q.name, c.name]);
+  renderRadar(section.querySelector(".radar-wrap"), stats.filter(hasBoth), [q.name, c.name]);
   section.hidden = false;
 }
