@@ -1,0 +1,16 @@
+# Ham ve işlenmiş veri GitHub'a konmaz
+data/raw/
+data/processed/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# IDE / araç
+.idea/
+.vscode/
+.claude/settings.local.json

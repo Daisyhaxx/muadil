@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benzer Oyuncu Bulucu</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Benzer Oyuncu Bulucu</h1>
+    <span id="season" class="badge"></span>
+  </header>
+
+  <main>
+    <section class="search">
+      <label for="player-input" class="sr-only">Oyuncu ara</label>
+      <input id="player-input" type="search" placeholder="Oyuncu ara, örn. Orkun Kökçü" autocomplete="off"
+             role="combobox" aria-controls="suggestions" aria-expanded="false">
+      <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+    </section>
+
+    <form id="filters" class="filters" autocomplete="off">
+      <label>Maks. yaş <input name="max_age" type="number" min="15" max="45" placeholder="—"></label>
+      <label>Maks. değer (M€) <input name="max_value" type="number" min="0" step="0.5" placeholder="—"></label>
+      <label>Ayak
+        <select name="foot">
+          <option value="">Hepsi</option>
+          <option value="Left">Sol</option>
+          <option value="Right">Sağ</option>
+          <option value="Both">İki ayak</option>
+        </select>
+      </label>
+      <label>Sözleşme bitişi ≤ <input name="contract_until" type="date"></label>
+      <label>Sonuç <input name="top" type="number" min="1" max="50" value="10"></label>
+      <fieldset id="league-filter" class="leagues"><legend>Ligler (boş = hepsi)</legend></fieldset>
+    </form>
+
+    <section id="query-card" class="query-card" hidden></section>
+    <p id="status" class="status">Bir oyuncu ara; aynı mevkideki en benzer oyuncular listelenir.</p>
+
+    <div class="layout">
+      <section class="results">
+        <table id="results-table" hidden>
+          <thead>
+            <tr>
+              <th>#</th><th>Oyuncu</th><th>Lig</th><th class="num">Yaş</th><th>Mevki</th>
+              <th class="num">Dk</th><th class="num">Değer</th><th>Benzerlik</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <section id="compare" class="compare" hidden></section>
+    </div>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
