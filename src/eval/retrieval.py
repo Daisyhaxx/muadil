@@ -4,6 +4,7 @@ Sorgu = iki sezonda da 900+ dk oynayan oyuncu. Aday havuzu = N+1'deki aynı mevk
 (`rank`) ya da sadece hedefin ligindekiler (`league_rank`). Sorgunun N kaydı havuzda yok.
 Vektörler her sezonun kendi mevki grubu içinde standardize edilir.
 """
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -12,6 +13,7 @@ import pandas as pd
 from ..features.dataset import MIN_MINUTES, build_features, load_season
 from ..features.feature_sets import STYLE_FIELDS
 from ..features.percentile import add_percentiles
+from ..similarity.metric import standardize as z_score
 from .pairwise import SIMILARITY
 from .variants import SEASON_PREFIX, Variant
 
@@ -24,12 +26,8 @@ def season_table(year: str, min_minutes: int = MIN_MINUTES) -> pd.DataFrame:
 
 
 def standardize(df: pd.DataFrame, columns: list[str]) -> np.ndarray:
-    """Z-skor. Havuzda sabit olan sütun → 0 (bilgi yok). NaN (ligde veri yok) korunur; metrik ele alır."""
-    m = df[columns].astype(float)
-    std = m.std()
-    z = (m - m.mean()) / std.where(std > 0)
-    z.loc[:, ~(std > 0)] = 0.0
-    return z.to_numpy()
+    """Arama servisiyle aynı z-skor (`src/similarity/metric.py`). NaN (veri yok) korunur; metrik ele alır."""
+    return z_score(df[columns]).to_numpy()
 
 
 @dataclass
@@ -44,8 +42,15 @@ class SeasonPair:
         return f"{self.year} → {self.next_year}"
 
 
-def target_ranks(pair: SeasonPair, variant: Variant) -> pd.DataFrame:
-    """Her sorgu için hedefin sırası (1 = en benzer). Eşit benzerlikte hedef öne alınır."""
+# (sorgu sezonunun bir mevki grubundaki satırları, sütunlar) → satır sırasıyla sorgu vektörleri
+QueryVectors = Callable[[pd.DataFrame, list[str]], np.ndarray]
+
+
+def target_ranks(pair: SeasonPair, variant: Variant, query_vectors: QueryVectors = standardize) -> pd.DataFrame:
+    """Her sorgu için hedefin sırası (1 = en benzer). Eşit benzerlikte hedef öne alınır.
+
+    `query_vectors` sorgu profilini değiştirmek için (örn. çok sezonlu profil); havuz her zaman tek sezon N+1.
+    """
     parts = []
     for group, pool in pair.next_season.groupby("position_group"):
         cols = variant.columns(group)
@@ -53,7 +58,7 @@ def target_ranks(pair: SeasonPair, variant: Variant) -> pd.DataFrame:
         is_query = season.player_id.isin(pool.player_id).to_numpy()
         queries = season[is_query]
 
-        sim = SIMILARITY[variant.metric](standardize(season, cols)[is_query], standardize(pool, cols))
+        sim = SIMILARITY[variant.metric](query_vectors(season, cols)[is_query], standardize(pool, cols))
         position = pd.Series(np.arange(len(pool)), index=pool.player_id.to_numpy())
         target = position.loc[queries.player_id].to_numpy()
         following = pool.iloc[target]

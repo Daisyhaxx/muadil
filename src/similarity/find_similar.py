@@ -11,6 +11,7 @@ from ..features.dataset import MIN_MINUTES
 from ..ingest.leagues import TOURNAMENTS
 from ..viz.radar import save_radar
 from .filters import Filters
+from .profile import HISTORY_SEASONS
 from .report import explanation_lines, results_table
 from .service import SimilarityService
 
@@ -21,6 +22,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--year", default="25/26")
     p.add_argument("--top", type=int, default=10)
     p.add_argument("--min-minutes", type=int, default=MIN_MINUTES)
+    p.add_argument("--history", type=int, default=HISTORY_SEASONS,
+                   help="Profile katılacak önceki sezon sayısı (0 = sadece --year)")
     p.add_argument("--max-age", type=int, help="Bu yaş dahil")
     p.add_argument("--league", nargs="+", choices=sorted(TOURNAMENTS))
     p.add_argument("--max-value", type=float, help="Milyon €")
@@ -43,8 +46,9 @@ def build_filters(args: argparse.Namespace) -> Filters:
 
 def main() -> int:
     args = parse_args()
-    service = SimilarityService(args.year, args.min_minutes)
+    service = SimilarityService(args.year, args.min_minutes, args.history)
     features = service.features
+    profile = " + ".join(service.profile_years)
 
     matches = service.find(args.name)
     if len(matches) != 1:
@@ -56,7 +60,7 @@ def main() -> int:
     q = features.loc[qi]
     results = service.similar(qi, build_filters(args), args.top)
     print(f"Sorgu: {q.player_name} ({q.team_name}, {q.league}, {q.position_group}, "
-          f"{int(q.age)} yaş, {int(q.minutesPlayed)} dk)\n")
+          f"{int(q.age)} yaş, {int(q.minutesPlayed)} dk) · profil: {profile}\n")
     if results.empty:
         print("Filtrelere uyan oyuncu yok.")
         return 0
@@ -76,7 +80,7 @@ def main() -> int:
         save_radar(list(e.label), e.query_pct.to_numpy(), e.candidate_pct.to_numpy(),
                    (q.player_name, c.player_name),
                    f"{q.player_name} vs {c.player_name} · benzerlik {results.similarity.iloc[0]:.2f}",
-                   args.radar)
+                   args.radar, note=f"profil: {profile}")
         print(f"\nRadar: {args.radar.resolve()}")
     return 0
 

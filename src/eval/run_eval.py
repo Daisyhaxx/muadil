@@ -11,9 +11,9 @@ import pandas as pd
 
 from ..features.dataset import MIN_MINUTES
 from .metrics import summarize
-from .report import breakdown_table, comparison_table
+from .report import breakdown_table, comparison_table, difference_table
 from .retrieval import SeasonPair, season_table, target_ranks
-from .variants import BASELINE, all_variants
+from .variants import BASELINE, COMPARISONS, all_variants
 
 DEFAULT_PAIRS = [("23/24", "24/25"), ("24/25", "25/26")]
 
@@ -50,6 +50,9 @@ def main() -> int:
         comparison_table(results, labels),
         "## Yöntem karşılaştırması — havuz: sadece hedefin ligi",
         comparison_table(results, labels, rank="league_rank", pool_size="league_pool_size"),
+        "## Eşleştirilmiş farklar — havuz: sadece hedefin ligi\n\n"
+        "MRR farkı a − b ve %95 eşleştirilmiş bootstrap güven aralığı (aynı sorgular, 10 000 tekrar).",
+        difference_table(results, COMPARISONS),
         f"## Kırılım: mevcut yöntem ({' · '.join(BASELINE.labels)})",
         breakdown_table(results[BASELINE]),
     ]

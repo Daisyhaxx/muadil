@@ -25,10 +25,13 @@ def _radar_first(fields: list[str], radar: list[str]) -> list[str]:
 
 
 def explain(
-    features: pd.DataFrame, vectors: pd.DataFrame, query_index: int, candidate_index: int
+    percentiles: pd.DataFrame, vectors: pd.DataFrame, group: str, query_index: int, candidate_index: int
 ) -> pd.DataFrame:
-    """Aramada kullanılan her alan için bir satır; `on_radar` = mevkiye özel radar setinde mi."""
-    radar = fields_for(features.at[query_index, "position_group"])
+    """Aramada kullanılan her alan için bir satır; `on_radar` = mevkiye özel radar setinde mi.
+
+    percentiles: gösterilecek `pct_<alan>` değerleri (profil: güncel + önceki sezon ortalaması).
+    """
+    radar = fields_for(group)
     fields = _radar_first([col.removeprefix(PREFIX) for col in vectors.columns], radar)
     columns = [PREFIX + f for f in fields]
     q = vectors.loc[query_index, columns].to_numpy(dtype=float)
@@ -40,8 +43,8 @@ def explain(
         "field": fields,
         "label": [label(f) for f in fields],
         "on_radar": [f in radar for f in fields],
-        "query_pct": features.loc[query_index, columns].to_numpy(dtype=float),
-        "candidate_pct": features.loc[candidate_index, columns].to_numpy(dtype=float),
+        "query_pct": percentiles.loc[query_index, columns].to_numpy(dtype=float),
+        "candidate_pct": percentiles.loc[candidate_index, columns].to_numpy(dtype=float),
         "contribution": np.where(missing, 0.0, (1 - gaps / 2) / n),
         "shared": np.nan_to_num(q * c),
     })

@@ -41,6 +41,19 @@ class Variant:
 
 # Arayüz ve CLI'nin kullandığı yöntem
 BASELINE = Variant("search", "pct_league", "euclidean")
+# 06.11.2026'ya kadar kullanılan yöntem
+PREVIOUS = Variant("position", "pct_league", "cosine")
+
+# README bulgularındaki eşleştirilmiş karşılaştırmalar: (etiket, a, b) → a − b
+COMPARISONS = [
+    ("Mevcut − eski (mevkiye özel · cosine)", BASELINE, PREVIOUS),
+    ("Feature seti: tüm alanlar − mevkiye özel (lig içi · cosine)", Variant("common", "pct_league", "cosine"), PREVIOUS),
+    ("Kaleci alanlarını tutmak: tüm alanlar − mevcut (Öklid)", Variant("common", "pct_league", "euclidean"), BASELINE),
+    ("Normalizasyon: lig içi (Öklid) − per-90 z (cosine), tüm alanlar",
+     Variant("common", "pct_league", "euclidean"), Variant("common", "per90_z", "cosine")),
+    ("Metrik: Öklid − cosine (tüm alanlar, lig içi)",
+     Variant("common", "pct_league", "euclidean"), Variant("common", "pct_league", "cosine")),
+]
 
 
 def all_variants() -> list[Variant]:

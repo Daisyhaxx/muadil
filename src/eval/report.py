@@ -2,6 +2,7 @@
 import pandas as pd
 
 from ..features.positions import GROUP_LABELS
+from .bootstrap import format_difference, mrr_difference
 from .metrics import random_baseline, summarize
 from .variants import BASELINE, Variant
 
@@ -64,6 +65,21 @@ def _slices(ranks: pd.DataFrame) -> list[tuple[str, pd.DataFrame]]:
         ("Takım değiştirdi", ranks[ranks.changed_team]),
     ]
     return [(name, part) for name, part in slices if len(part)]
+
+
+def difference_table(results: dict[Variant, pd.DataFrame], comparisons: list[tuple[str, Variant, Variant]]) -> str:
+    """Lig içi havuzda MRR farkı a − b ve %95 eşleştirilmiş bootstrap aralığı; tüm sorgular ve kesitler."""
+    rows = []
+    for label, a, b in comparisons:
+        ra, rb = results[a], results[b]
+        row = {"Karşılaştırma": label}
+        for name, part in _slices(ra):
+            if name in GROUP_LABELS.values():
+                continue
+            row[f"{name} (n={len(part)})"] = format_difference(
+                mrr_difference(ra.loc[part.index, "league_rank"], rb.loc[part.index, "league_rank"]))
+        rows.append(row)
+    return markdown_table(rows)
 
 
 def breakdown_table(ranks: pd.DataFrame) -> str:

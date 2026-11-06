@@ -34,6 +34,7 @@ def save_radar(
     names: tuple[str, str],
     title: str,
     path: Path,
+    note: str = "",
 ) -> None:
     """Oyunculardan birinde verisi olmayan eksen (NaN, örn. TFF'de xG) çizilmez, altta not edilir."""
     present = ~(np.isnan(query_pct) | np.isnan(candidate_pct))
@@ -41,6 +42,8 @@ def save_radar(
     labels = [lab for lab, ok in zip(labels, present) if ok]
     query_pct, candidate_pct = query_pct[present], candidate_pct[present]
     subtitle = "Mevki içi percentile (0–100), 90 dakika başına"
+    if note:
+        subtitle += f" · {note}"
     if missing:
         subtitle += f" · veri yok: {', '.join(missing)}"
 

@@ -1,23 +1,32 @@
-"""Arama servisi: özellik tablosunu bir kez kurar, mevki vektörlerini önbellekler. CLI ve API ortak kullanır."""
+"""Arama servisi: özellik tablosunu ve profili bir kez kurar, mevki vektörlerini önbellekler. CLI ve API ortak kullanır."""
 import pandas as pd
 
 from ..features.dataset import MIN_MINUTES, build_features, load_season
-from .engine import group_vectors, search
+from .engine import search
 from .explain import explain
 from .filters import Filters
 from .lookup import find_players
+from .profile import DECAY, HISTORY_SEASONS, blended_percentiles, group_vectors, load_history
 
 
 class SimilarityService:
-    def __init__(self, year: str = "25/26", min_minutes: int = MIN_MINUTES):
+    def __init__(self, year: str = "25/26", min_minutes: int = MIN_MINUTES, history_seasons: int = HISTORY_SEASONS):
         self.year = year
         self.min_minutes = min_minutes
+        self.decay = DECAY
         self.features = build_features(load_season(year), min_minutes)
+        self.history = load_history(year, history_seasons, min_minutes)
+        self.percentiles = blended_percentiles(self.features, list(self.history.values()), self.decay)
         self._vectors: dict[str, pd.DataFrame] = {}
+
+    @property
+    def profile_years(self) -> list[str]:
+        """Profile giren sezonlar, yeniden eskiye."""
+        return [self.year, *self.history]
 
     def vectors(self, group: str) -> pd.DataFrame:
         if group not in self._vectors:
-            self._vectors[group] = group_vectors(self.features, group)
+            self._vectors[group] = group_vectors(self.features, list(self.history.values()), group, self.decay)
         return self._vectors[group]
 
     def group_of(self, index: int) -> str:
@@ -40,7 +49,7 @@ class SimilarityService:
         group = self.group_of(index)
         if self.group_of(candidate_index) != group:
             raise ValueError("İki oyuncu farklı mevki gruplarında")
-        return explain(self.features, self.vectors(group), index, candidate_index)
+        return explain(self.percentiles, self.vectors(group), group, index, candidate_index)
 
     def similarity(self, index: int, candidate_index: int) -> float:
         return float(self.explain(index, candidate_index).contribution.sum())

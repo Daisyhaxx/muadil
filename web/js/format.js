@@ -6,6 +6,14 @@ export const setMeta = (m) => { meta = m; };
 export const leagueName = (key) => meta.leagues[key] ?? key;
 export const groupName = (key) => meta.position_groups[key] ?? key;
 
+// Profilin dayandığı sezonlar: "25/26 + 24/25 ortalaması (önceki sezon ×0,5)" ya da tek sezon "25/26"
+export function profileLabel() {
+  const years = meta.profile_years ?? [meta.year];
+  if (years.length < 2) return years[0];
+  const decay = new Intl.NumberFormat("tr-TR").format(meta.profile_decay);
+  return `${years.join(" + ")} ortalaması (dakika ağırlıklı, önceki sezon ×${decay})`;
+}
+
 const oneDecimal = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
 const twoDecimals = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const integer = new Intl.NumberFormat("tr-TR");

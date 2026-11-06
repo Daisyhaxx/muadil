@@ -4,9 +4,12 @@
 
 ## Sıradaki
 
-1. [ ] **Model · Çok sezonlu profil.** Son 2–3 sezonun dakikaya göre ağırlıklı ortalaması; tek sezonluk
-   gürültüyü azaltır. Veri hazır (18 lig-sezon), yeni çekim gerekmiyor.
-   *Bitti sayılır:* eval'de tek sezonluk profile göre MRR farkı ölçüldü.
+1. [ ] **Model · Ligler arası arama için normalizasyon.** *Yeni bulgu (07.11):* lig değiştiren oyuncularda per-90
+   z-skor, lig içi percentile'dan daha iyi (MRR +0.050 [+0.011, +0.088]; tüm alanlar, per-90 cosine vs lig içi
+   Öklid — metrikleri ayırarak tekrar ölç); aynı takımda kalanlarda tersi.
+   "Premier League'deki oyuncuya Eredivisie'de benzer" ürünün ana senaryosu. Seçenekler: aday ligi sorgunun liginden
+   farklıysa per-90 kullan, ya da lig seviyesi düzeltmeli per-90.
+   *Bitti sayılır:* "Lig değiştirdi" kesitinde iyileşme, genelde kayıp yok (eval).
 2. [ ] **Model · Takım etkisini ayıkla.** Takım/lig değiştirenlerde MRR 0.57 → ~0.43 düşüyor; profilin bir kısmı
    takımın oyun tarzından geliyor. Savunma/pas istatistiklerini topa sahip olma oranına göre düzelt.
    Önce takım istatistiği verisi (topa sahip olma) bulunmalı.
@@ -22,8 +25,12 @@
 8. [ ] **Ürün · Supabase'e arama logu** (hangi oyuncular, hangi filtrelerle aranıyor).
 9. [ ] **Ürün · Sezonlar arası gelişim.** Oyuncunun 23/24 → 25/26 percentile değişimini gösteren sayfa.
 10. [ ] **Mühendislik · GitHub'a gönder.** Remote yok; ham veri `.gitignore`'da, sadece kod + türetilmiş sonuçlar.
+11. [ ] **Veri · 22/23 sezonu.** 3 sezonluk profili test etmek için. 6 lig; çekimi 2 güne böl.
 
 ## Tamamlananlar
+
+- [x] Çok sezonlu profil: güncel + önceki sezon, dakika ağırlıklı, önceki sezon ×0,5. Sorgu tarafında lig içi MRR
+  +0.030 [+0.019, +0.041], geçmişi olan oyuncularda +0.050. Radar ve percentile'lar da iki sezonluk (07.11.2026)
 
 - [x] Arama yöntemi güncellendi: 35 alan (saha oyuncusunda kaleci alanları hariç) + Öklid. Lig içi MRR
   0.519 → 0.573, R@10 %83 → %86. Radar mevkiye özel seti göstermeye devam ediyor (06.11.2026)

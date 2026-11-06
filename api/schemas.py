@@ -52,3 +52,5 @@ class Meta(BaseModel):
     min_minutes: int
     leagues: dict[str, str]          # yalnızca verisi olan ligler
     position_groups: dict[str, str]
+    profile_years: list[str]         # profile giren sezonlar, yeniden eskiye (örn. ["25/26", "24/25"])
+    profile_decay: float             # önceki sezonun ağırlık çarpanı (dakikayla birlikte)

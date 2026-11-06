@@ -1,5 +1,5 @@
 // Karşılaştırma paneli: başlık + lejant, radar, ortak yönler / farklar, tablo görünümü.
-import { esc, pct, score } from "./format.js";
+import { esc, pct, profileLabel, score } from "./format.js";
 import { renderRadar } from "./radar.js";
 
 const listItems = (stats) =>
@@ -21,7 +21,7 @@ export function renderCompare(section, data) {
 
   section.innerHTML = `
     <h2>${esc(q.name)} – ${esc(c.name)} · benzerlik ${score(data.similarity)}</h2>
-    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına. Değerler: sorgu / aday.
+    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına; ${esc(profileLabel())}. Değerler: sorgu / aday.
       Benzerlik ${stats.length} istatistikten hesaplanıyor; radar mevkiye özel ${radar.length} tanesini gösteriyor.${note}</p>
     <div class="legend">
       <span><i class="swatch series-1"></i>${esc(q.name)}</span>

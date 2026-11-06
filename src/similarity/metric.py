@@ -11,10 +11,16 @@ import pandas as pd
 
 
 def standardize(matrix: pd.DataFrame) -> pd.DataFrame:
-    """Z-skor. Havuzda sabit olan sütunlar bilgi taşımadığı için atılır. NaN (veri yok) korunur."""
+    """Z-skor. Havuzda sabit olan sütun → 0 (herkes ortalama). NaN (veri yok) korunur.
+
+    Sezonda hiç gelmeyen alan (örn. 24/25'te outfielderBlocks) tamamen NaN kalır; çok sezonlu profilde
+    o alan diğer sezondan gelir, tek sezonda benzerlikte atlanır. Eval de bu fonksiyonu kullanır.
+    """
+    matrix = matrix.astype(float)
     std = matrix.std()
-    keep = std[std > 0].index
-    return (matrix[keep] - matrix[keep].mean()) / std[keep]
+    z = (matrix - matrix.mean()) / std.where(std > 0)
+    z.loc[:, std == 0] = 0.0
+    return z
 
 
 def similarity_to(query: np.ndarray, matrix: np.ndarray) -> np.ndarray:

@@ -1,16 +1,11 @@
-"""Benzer oyuncu arama: aynı mevki grubu içinde Öklid tabanlı benzerlik, sonra filtreler."""
+"""Benzer oyuncu arama: aynı mevki grubu içinde Öklid tabanlı benzerlik, sonra filtreler.
+
+Vektörler `profile.group_vectors`'tan gelir (güncel + önceki sezon).
+"""
 import pandas as pd
 
-from ..features.feature_sets import search_fields_for
-from ..features.percentile import pct_columns
 from .filters import Filters
-from .metric import similarity_to, standardize
-
-
-def group_vectors(features: pd.DataFrame, group: str) -> pd.DataFrame:
-    """Mevki grubunun standardize vektörleri. Filtrelerden önce, tüm havuzda hesaplanır."""
-    pool = features[features.position_group == group]
-    return standardize(pool[pct_columns(search_fields_for(group))])
+from .metric import similarity_to
 
 
 def search(

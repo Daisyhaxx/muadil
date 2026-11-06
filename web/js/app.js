@@ -66,7 +66,7 @@ function renderLeagueFilter(leagues) {
 async function init() {
   const meta = await getMeta();
   setMeta(meta);
-  $("season").textContent = `${meta.year} · ${meta.min_minutes}+ dk`;
+  $("season").textContent = `${meta.year} · ${meta.min_minutes}+ dk · profil ${meta.profile_years.join(" + ")}`;
   renderLeagueFilter(meta.leagues);
 
   initSearch($("player-input"), $("suggestions"), (player) => {

@@ -32,6 +32,8 @@ def meta(service: Service):
         min_minutes=service.min_minutes,
         leagues={k: v for k, v in LEAGUE_NAMES.items() if k in present},
         position_groups=GROUP_LABELS,
+        profile_years=service.profile_years,
+        profile_decay=service.decay,
     )
 
 
