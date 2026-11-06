@@ -7,6 +7,8 @@ Veri: Sofascore. 6 lig (Süper Lig, TFF 1. Lig, Premier League, Eredivisie, Prim
 3 sezon (23/24, 24/25, 25/26). Lig-sezon başına ~400–500 oyuncu var, bunların 900+ dakika oynayanları kullanılıyor.
 Ham veri repoda yok; burada sadece kod ve türetilmiş sonuçlar paylaşılıyor.
 
+Yol haritası ve ilerleme: [`ROADMAP.md`](ROADMAP.md).
+
 ## Çalıştırma
 
 ```
