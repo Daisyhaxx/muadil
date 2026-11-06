@@ -75,11 +75,14 @@ def compare(service: Service, player_id: int, candidate_id: int):
         explanation = service.explain(qi, ci)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
+    common, different = common_and_different(explanation)
     return CompareResponse(
         query=player_summary(service.features.loc[qi]),
         candidate=player_summary(service.features.loc[ci]),
         similarity=float(explanation.contribution.sum()),
         stats=contributions(explanation),
+        common=common,
+        different=different,
     )
 
 

@@ -14,16 +14,15 @@ const tableRows = (stats) =>
 const hasBoth = (s) => s.query_pct != null && s.candidate_pct != null;
 
 export function renderCompare(section, data) {
-  const { query: q, candidate: c, stats } = data;
-  const ranked = [...stats].sort((a, b) => b.contribution - a.contribution);
-  const common = ranked.slice(0, 5);
-  const different = ranked.filter((s) => s.contribution < 0).slice(-3).reverse();
-  const missing = stats.filter((s) => !hasBoth(s)).map((s) => s.label);
+  const { query: q, candidate: c, stats, common, different } = data;
+  const radar = stats.filter((s) => s.on_radar);
+  const missing = radar.filter((s) => !hasBoth(s)).map((s) => s.label);
   const note = missing.length ? ` Veri yok, radarda gösterilmiyor: ${esc(missing.join(", "))}.` : "";
 
   section.innerHTML = `
     <h2>${esc(q.name)} – ${esc(c.name)} · benzerlik ${score(data.similarity)}</h2>
-    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına. Değerler: sorgu / aday.${note}</p>
+    <p class="sub">Mevki içi percentile (0–100), 90 dakika başına. Değerler: sorgu / aday.
+      Benzerlik ${stats.length} istatistikten hesaplanıyor; radar mevkiye özel ${radar.length} tanesini gösteriyor.${note}</p>
     <div class="legend">
       <span><i class="swatch series-1"></i>${esc(q.name)}</span>
       <span><i class="swatch series-2"></i>${esc(c.name)}</span>
@@ -41,6 +40,6 @@ export function renderCompare(section, data) {
         <tbody>${tableRows(stats)}</tbody>
       </table>
     </details>`;
-  renderRadar(section.querySelector(".radar-wrap"), stats.filter(hasBoth), [q.name, c.name]);
+  renderRadar(section.querySelector(".radar-wrap"), radar.filter(hasBoth), [q.name, c.name]);
   section.hidden = false;
 }

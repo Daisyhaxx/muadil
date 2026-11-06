@@ -71,6 +71,7 @@ def main() -> int:
     if args.radar:
         ci = results.index[0]
         e = service.explain(qi, ci)
+        e = e[e.on_radar]
         c = features.loc[ci]
         save_radar(list(e.label), e.query_pct.to_numpy(), e.candidate_pct.to_numpy(),
                    (q.player_name, c.player_name),

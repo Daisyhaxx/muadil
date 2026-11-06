@@ -24,11 +24,12 @@ def season_table(year: str, min_minutes: int = MIN_MINUTES) -> pd.DataFrame:
 
 
 def standardize(df: pd.DataFrame, columns: list[str]) -> np.ndarray:
-    """Z-skor. Eksik değer ve havuzda sabit olan sütun → 0 (nötr)."""
+    """Z-skor. Havuzda sabit olan sütun → 0 (bilgi yok). NaN (ligde veri yok) korunur; metrik ele alır."""
     m = df[columns].astype(float)
-    m = m.fillna(m.mean())
     std = m.std()
-    return ((m - m.mean()) / std.where(std > 0)).fillna(0).to_numpy()
+    z = (m - m.mean()) / std.where(std > 0)
+    z.loc[:, ~(std > 0)] = 0.0
+    return z.to_numpy()
 
 
 @dataclass

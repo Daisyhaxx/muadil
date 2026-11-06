@@ -1,10 +1,9 @@
 """DataFrame satırlarını API modellerine çevirir (NaN/NaT → None)."""
 import pandas as pd
 
-from .schemas import PlayerSummary, StatContribution
+from src.similarity.explain import common_and_different as split_explanation
 
-COMMON_COUNT = 5
-DIFFERENT_COUNT = 3
+from .schemas import PlayerSummary, StatContribution
 
 
 def _value(x):
@@ -31,11 +30,10 @@ def player_summary(row: pd.Series) -> PlayerSummary:
 
 
 def contributions(explanation: pd.DataFrame) -> list[StatContribution]:
-    return [StatContribution(**{k: _value(v) for k, v in r.items()})
+    return [StatContribution(**{k: _value(r[k]) for k in StatContribution.model_fields})
             for r in explanation.to_dict("records")]
 
 
 def common_and_different(explanation: pd.DataFrame) -> tuple[list, list]:
-    ranked = explanation.sort_values("contribution", ascending=False)
-    different = ranked[ranked.contribution < 0].tail(DIFFERENT_COUNT).iloc[::-1]
-    return contributions(ranked.head(COMMON_COUNT)), contributions(different)
+    common, different = split_explanation(explanation)
+    return contributions(common), contributions(different)

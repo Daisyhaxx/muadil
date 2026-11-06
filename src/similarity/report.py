@@ -1,6 +1,8 @@
 """Arama sonuçlarının metin çıktısı: sonuç tablosu + benzerlik açıklaması."""
 import pandas as pd
 
+from .explain import common_and_different
+
 COLUMNS = ["player_name", "team_name", "league", "age", "positions_detailed",
            "minutesPlayed", "market_value_m", "similarity"]
 
@@ -24,11 +26,10 @@ def _items(rows: pd.DataFrame) -> str:
                       for r in rows.itertuples())
 
 
-def explanation_lines(explanation: pd.DataFrame, common: int = 5, different: int = 3) -> list[str]:
+def explanation_lines(explanation: pd.DataFrame) -> list[str]:
     """Percentile'lar sorgu/aday sırasıyla verilir."""
-    ranked = explanation.sort_values("contribution", ascending=False)
-    lines = [f"   Ortak: {_items(ranked.head(common))}"]
-    diffs = ranked[ranked.contribution < 0].tail(different).iloc[::-1]
-    if len(diffs):
-        lines.append(f"   Fark:  {_items(diffs)}")
+    common, different = common_and_different(explanation)
+    lines = [f"   Ortak: {_items(common)}"]
+    if len(different):
+        lines.append(f"   Fark:  {_items(different)}")
     return lines

@@ -21,6 +21,7 @@ class PlayerSummary(BaseModel):
 class StatContribution(BaseModel):
     field: str
     label: str
+    on_radar: bool               # mevkiye özel radar setinde mi (aramada tüm alanlar kullanılıyor)
     query_pct: float | None      # 0–1, mevki içi percentile; None = ligde veri yok (örn. TFF'de xG)
     candidate_pct: float | None
     contribution: float   # toplamı = benzerlik
@@ -41,7 +42,9 @@ class CompareResponse(BaseModel):
     query: PlayerSummary
     candidate: PlayerSummary
     similarity: float
-    stats: list[StatContribution]  # radar sırası
+    stats: list[StatContribution]  # aramadaki tüm alanlar; radar alanları radar sırasıyla önde
+    common: list[StatContribution]
+    different: list[StatContribution]
 
 
 class Meta(BaseModel):

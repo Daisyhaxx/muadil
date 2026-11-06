@@ -71,5 +71,24 @@ PERCENT_FIELDS = [f for f in STYLE_FIELDS if f.endswith("Percentage")]
 COUNT_FIELDS = [f for f in STYLE_FIELDS if f not in PERCENT_FIELDS]
 
 
+# Sadece kalecide anlamlı. Saha oyuncusunda ya gürültü (nadir kurtarış) ya da takım sinyali:
+# goalsConceded = oyuncu sahadayken yenen gol, oyun tarzını değil takımın savunmasını ölçer.
+GOALKEEPER_ONLY = [
+    "saves", "savedShotsFromInsideTheBox", "goalsConceded", "highClaims", "punches",
+    "crossesNotClaimed", "runsOut", "successfulRunsOut",
+]
+
+
 def fields_for(group: str) -> list[str]:
+    """Radar ve açıklamada gösterilen mevkiye özel set (sıra = radar ekseni)."""
     return BY_GROUP[group]
+
+
+def search_fields_for(group: str) -> list[str]:
+    """Aramada kullanılan set: tüm stil alanları, saha oyuncularında kaleci alanları hariç.
+
+    Sezonlar arası değerlendirmede mevkiye özel setten iyi (README, Bulgular).
+    """
+    if group == "goalkeeper":
+        return STYLE_FIELDS
+    return [f for f in STYLE_FIELDS if f not in GOALKEEPER_ONLY]
