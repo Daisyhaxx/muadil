@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from ..features.dataset import MIN_MINUTES
-from ..ingest.leagues import TOURNAMENTS
+from ..leagues import LEAGUE_NAMES
 from ..viz.radar import save_radar
 from .filters import Filters
 from .profile import HISTORY_SEASONS
@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--history", type=int, default=HISTORY_SEASONS,
                    help="Profile katılacak önceki sezon sayısı (0 = sadece --year)")
     p.add_argument("--max-age", type=int, help="Bu yaş dahil")
-    p.add_argument("--league", nargs="+", choices=sorted(TOURNAMENTS))
+    p.add_argument("--league", nargs="+", choices=sorted(LEAGUE_NAMES))
     p.add_argument("--max-value", type=float, help="Milyon €")
     p.add_argument("--foot", choices=["Left", "Right", "Both"])
     p.add_argument("--contract-until", help="Bu tarihten önce sözleşmesi bitenler, örn. 2027-06-30")

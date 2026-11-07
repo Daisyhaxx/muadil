@@ -2,6 +2,10 @@
 data/raw/
 data/processed/
 
+# Veri çekme kodu ve yerel çalışma notları public repoda yok (kaynağın kullanım şartları)
+src/ingest/
+CLAUDE.md
+
 # Python
 __pycache__/
 *.py[cod]

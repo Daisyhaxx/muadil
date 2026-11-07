@@ -3,9 +3,10 @@
 Bir futbolcunun istatistik profiline en çok benzeyen oyuncuları bulur. Filtreler: yaş, lig, piyasa değeri, sözleşme, ayak.
 Örnek: "Süper Lig'de şu forvete en benzer 23 yaş altı oyuncu kim?"
 
-Veri: Sofascore. 6 lig (Süper Lig, TFF 1. Lig, Premier League, Eredivisie, Primeira Liga, Belçika Pro League) ×
-3 sezon (23/24, 24/25, 25/26). Lig-sezon başına ~400–500 oyuncu var, bunların 900+ dakika oynayanları kullanılıyor.
-Ham veri repoda yok; burada sadece kod ve türetilmiş sonuçlar paylaşılıyor.
+Veri: Sofascore'un oyuncu sezon istatistikleri. 6 lig (Süper Lig, TFF 1. Lig, Premier League, Eredivisie,
+Primeira Liga, Belçika Pro League) × 3 sezon (23/24, 24/25, 25/26). Lig-sezon başına ~400–500 oyuncu var, bunların
+900+ dakika oynayanları kullanılıyor. **Veri ve veri çekme kodu bu repoda yok**; burada modelleme, değerlendirme,
+API ve arayüz kodu ile türetilmiş sonuçlar (değerlendirme tabloları) paylaşılıyor. Beklenen veri formatı aşağıda.
 
 Yol haritası ve ilerleme: [`ROADMAP.md`](ROADMAP.md).
 
@@ -13,7 +14,6 @@ Yol haritası ve ilerleme: [`ROADMAP.md`](ROADMAP.md).
 
 ```
 pip install -r requirements.txt
-
 
 # Arama
 python -m src.similarity.find_similar "Orkun Kökçü" --max-age 23 --max-value 5 --league eredivisie
@@ -26,6 +26,21 @@ python -m src.eval.run_eval --out results/retrieval_eval.md
 python -m src.eval.history_eval --out results/history_eval.md   # çok sezonlu profil
 python -m src.eval.league_eval --out results/league_eval.md     # lig farkı düzeltmesi (α)
 ```
+
+### Veri formatı
+
+Kod, lig-sezon başına bir parquet dosyası bekler: `~/player-data/processed/sofascore/<lig>_<yy-yy>.parquet`
+(örn. `super_lig_25-26.parquet`; kök dizin `PLAYER_DATA_DIR` ortam değişkeniyle değişir, `src/paths.py`).
+Oyuncu başına bir satır, sezon toplamları:
+
+| Sütun | Açıklama |
+|---|---|
+| `league`, `season_year` | Kısa lig adı (`src/leagues.py`), sezon (`"25/26"`) |
+| `player_id`, `player_name`, `team_id`, `team_name` | Kimlikler; takım = sezondaki takım |
+| `position`, `positions_detailed` | Kaba mevki (G/D/M/F) ve detaylı mevki listesi (örn. `["MC", "DM"]`) |
+| `date_of_birth`, `preferred_foot`, `market_value`, `contract_until` | Profil (filtreler için) |
+| `minutesPlayed` | Sezon dakikası |
+| 43 stil alanı | Sayımlar sezon toplamı, `*Percentage` alanları yüzde (`STYLE_FIELDS`, `src/features/feature_sets.py`) |
 
 ## Yöntem
 

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.features.positions import GROUP_LABELS
-from src.ingest.leagues import LEAGUE_NAMES
+from src.leagues import LEAGUE_NAMES
 from src.similarity.filters import Filters
 from src.similarity.service import SimilarityService
 
