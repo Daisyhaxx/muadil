@@ -3,6 +3,7 @@ import pandas as pd
 
 from .. import paths
 from .feature_sets import STYLE_FIELDS
+from .league_adjust import LEAGUE_WEIGHT, add_league_adjusted
 from .per90 import to_per90
 from .percentile import add_percentiles
 from .positions import add_position_group
@@ -25,9 +26,12 @@ def add_age(df: pd.DataFrame, on: pd.Timestamp | None = None) -> pd.DataFrame:
     return df.assign(age=years.floordiv(1))
 
 
-def build_features(raw: pd.DataFrame, min_minutes: int = MIN_MINUTES) -> pd.DataFrame:
+def build_features(
+    raw: pd.DataFrame, min_minutes: int = MIN_MINUTES, league_weight: float = LEAGUE_WEIGHT
+) -> pd.DataFrame:
     df = raw[raw.minutesPlayed >= min_minutes].reset_index(drop=True)
     df = add_position_group(df)
     df = add_age(df)
     df = to_per90(df)
-    return add_percentiles(df, STYLE_FIELDS)
+    df = add_percentiles(df, STYLE_FIELDS)        # radar ve açıklamada gösterilen
+    return add_league_adjusted(df, STYLE_FIELDS, league_weight)  # arama vektörleri

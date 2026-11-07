@@ -1,4 +1,4 @@
-"""Benzer oyuncu arama: aynı mevki grubu içinde Öklid tabanlı benzerlik, sonra filtreler.
+"""Benzer oyuncu arama: aynı mevki grubu içinde cosine benzerliği (`metric.py`), sonra filtreler.
 
 Vektörler `profile.group_vectors`'tan gelir (güncel + önceki sezon).
 """

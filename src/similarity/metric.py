@@ -1,8 +1,9 @@
-"""Standardize vektörler arasında Öklid uzaklığına dayalı benzerlik.
+"""Benzerlik: birim vektörler arasında Öklid uzaklığından, sonuç cosine benzerliği.
 
-benzerlik = 1 − d² / (2n); d = Öklid uzaklığı, n = alan sayısı.
-Standardize vektörlerde rastgele iki oyuncu için E[d²] ≈ 2n, yani benzerlik ≈ 0; aynı profil = 1.
-Ölçek cosine'e yakın; sıralama Öklid uzaklığıyla birebir aynı.
+Vektör = standardize (z-skor) değerler, sonra her satır RMS = 1 olacak şekilde ölçeklenir (`unit_rows`).
+benzerlik = 1 − d² / (2n); d = Öklid uzaklığı, n = alan sayısı. RMS = 1 iken bu tam olarak cosine benzerliği:
+rastgele iki oyuncu ≈ 0, aynı yönde profil = 1. Profilin büyüklüğü (oyuncunun ortalamadan genel olarak ne kadar
+ayrıştığı) değil yönü (tarzı) karşılaştırılır; lig değiştiren oyuncuda büyüklük değişiyor, yön daha kararlı (README).
 
 Veri yok (NaN, örn. TFF'de xG): o alan o oyuncu çifti için atlanır, n = iki oyuncuda da verisi olan alan sayısı.
 """
@@ -21,6 +22,14 @@ def standardize(matrix: pd.DataFrame) -> pd.DataFrame:
     z = (matrix - matrix.mean()) / std.where(std > 0)
     z.loc[:, std == 0] = 0.0
     return z
+
+
+def unit_rows(matrix: np.ndarray) -> np.ndarray:
+    """Her satırı RMS = 1 olacak şekilde ölçekler (verisi olan alanlar üstünden). Sıfır satır olduğu gibi kalır."""
+    matrix = np.asarray(matrix, dtype=float)
+    present = np.count_nonzero(~np.isnan(matrix), axis=1)
+    rms = np.sqrt(np.nansum(matrix**2, axis=1) / np.maximum(present, 1))
+    return matrix / np.where(rms > 0, rms, 1)[:, None]
 
 
 def similarity_to(query: np.ndarray, matrix: np.ndarray) -> np.ndarray:

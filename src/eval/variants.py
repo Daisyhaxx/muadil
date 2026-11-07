@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from itertools import product
 
 from ..features.feature_sets import STYLE_FIELDS, fields_for, search_fields_for
+from ..features.league_adjust import PREFIX as ADJUSTED_PREFIX
 from ..features.percentile import PREFIX, pct_columns
 
 # Lig ayrımı olmadan sezon + mevki grubu içinde percentile
@@ -19,6 +20,7 @@ NORMALIZATIONS = {
     "pct_league": ("Lig içi percentile", PREFIX),
     "pct_season": ("Ligler arası percentile", SEASON_PREFIX),
     "per90_z": ("Per-90 z-skor", ""),
+    "log_adj": ("Log per-90, lig farkı ½", ADJUSTED_PREFIX),
 }
 METRICS = {"cosine": "Cosine", "pearson": "Pearson", "euclidean": "Öklid"}
 
@@ -39,20 +41,25 @@ class Variant:
                 METRICS[self.metric])
 
 
-# Arayüz ve CLI'nin kullandığı yöntem
-BASELINE = Variant("search", "pct_league", "euclidean")
-# 06.11.2026'ya kadar kullanılan yöntem
-PREVIOUS = Variant("position", "pct_league", "cosine")
+# Arayüz ve CLI'nin kullandığı yöntem (07.11.2026'dan beri)
+BASELINE = Variant("search", "log_adj", "cosine")
+# 06.11.2026 – 07.11.2026
+PREVIOUS = Variant("search", "pct_league", "euclidean")
+# İlk sürüm (06.11.2026'ya kadar)
+FIRST = Variant("position", "pct_league", "cosine")
 
 # README bulgularındaki eşleştirilmiş karşılaştırmalar: (etiket, a, b) → a − b
 COMPARISONS = [
-    ("Mevcut − eski (mevkiye özel · cosine)", BASELINE, PREVIOUS),
-    ("Feature seti: tüm alanlar − mevkiye özel (lig içi · cosine)", Variant("common", "pct_league", "cosine"), PREVIOUS),
-    ("Kaleci alanlarını tutmak: tüm alanlar − mevcut (Öklid)", Variant("common", "pct_league", "euclidean"), BASELINE),
-    ("Normalizasyon: lig içi (Öklid) − per-90 z (cosine), tüm alanlar",
-     Variant("common", "pct_league", "euclidean"), Variant("common", "per90_z", "cosine")),
-    ("Metrik: Öklid − cosine (tüm alanlar, lig içi)",
-     Variant("common", "pct_league", "euclidean"), Variant("common", "pct_league", "cosine")),
+    ("Mevcut − önceki (lig içi percentile · Öklid)", BASELINE, PREVIOUS),
+    ("Mevcut − ilk sürüm (mevkiye özel · lig içi percentile · cosine)", BASELINE, FIRST),
+    ("Normalizasyon: log lig farkı ½ − lig içi percentile (cosine)",
+     BASELINE, Variant("search", "pct_league", "cosine")),
+    ("Normalizasyon: log lig farkı ½ − per-90 z (cosine)", BASELINE, Variant("search", "per90_z", "cosine")),
+    ("Metrik: cosine − Öklid (log lig farkı ½)", BASELINE, Variant("search", "log_adj", "euclidean")),
+    ("Metrik: cosine − Öklid (lig içi percentile)", Variant("search", "pct_league", "cosine"), PREVIOUS),
+    ("Feature seti: 35 alan − mevkiye özel (log lig farkı ½ · cosine)",
+     BASELINE, Variant("position", "log_adj", "cosine")),
+    ("Kaleci alanlarını tutmak: tüm alanlar − mevcut", Variant("common", "log_adj", "cosine"), BASELINE),
 ]
 
 

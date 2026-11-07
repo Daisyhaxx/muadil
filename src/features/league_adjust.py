@@ -1,0 +1,36 @@
+"""Ligler arası karşılaştırılabilir değerler: log per-90, lig farkının yarısı çıkarılmış. Aramanın vektörleri bundan.
+
+x' = log(1 + x) − α · (μ_lig − μ_havuz)
+μ_lig = aynı lig-sezon + mevki grubunun ortalaması, μ_havuz = aynı sezon + mevki grubunun (tüm ligler) ortalaması.
+Sayım alanları log ölçeğine alınır (çarpık dağılım, oranlar); oran alanları (%) olduğu gibi kalır.
+
+α = 1: ligin seviyesi tamamen silinir (lig içi percentile gibi). α = 0: ham seviye kalır; aynı ligin oyuncuları
+birbirine yakın düşer (lig parmak izi). α = 0,5'te filtresiz aramada sonuçların lig dağılımı havuzla aynı ve lig
+değiştirenler en az α = 1 kadar iyi bulunuyor (`python -m src.eval.league_eval`, README).
+"""
+from collections.abc import Sequence
+
+import numpy as np
+import pandas as pd
+
+from .feature_sets import PERCENT_FIELDS
+from .percentile import GROUP_KEYS, pct_columns
+
+PREFIX = "adj_"
+POOL_KEYS = ["season_year", "position_group"]
+LEAGUE_WEIGHT = 0.5  # α
+
+
+def add_league_adjusted(
+    df: pd.DataFrame, fields: Sequence[str], alpha: float = LEAGUE_WEIGHT, prefix: str = PREFIX
+) -> pd.DataFrame:
+    """`<prefix><alan>` sütunlarını ekler. NaN (ligde veri yok, örn. TFF'de xG) NaN kalır."""
+    fields = list(fields)
+    x = df[fields].astype(float)
+    counts = [f for f in fields if f not in PERCENT_FIELDS]
+    x[counts] = np.log1p(x[counts])
+    league_mean = x.groupby([df[k] for k in GROUP_KEYS]).transform("mean")
+    pool_mean = x.groupby([df[k] for k in POOL_KEYS]).transform("mean")
+    adjusted = x - alpha * (league_mean - pool_mean)
+    adjusted.columns = pct_columns(fields, prefix)
+    return pd.concat([df, adjusted], axis=1)

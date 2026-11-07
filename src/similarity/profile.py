@@ -1,17 +1,19 @@
 """Arama profili: güncel sezon + önceki sezon, dakika × yenilik ağırlıklı ortalama (`src/features/history.py`).
 
-Eval (results/history_eval.md): 2 sezonluk profil tek sezona göre lig içi MRR +0.027, geçmişi olanlarda +0.045.
+Eval (results/history_eval.md): 2 sezonluk profil tek sezona göre lig içi MRR'ı artırıyor, en çok geçmişi olanlarda.
 3 sezon test edilmedi (22/23 verisi yok), bu yüzden varsayılan 1 önceki sezon.
-Vektörler: her sezon kendi mevki grubunda standardize edilir, sonra ortalama alınır (eval ile aynı).
-Gösterilen percentile'lar: aynı ağırlıklarla percentile ortalaması.
+Vektörler: her sezonun lig düzeltmeli log per-90 değerleri (`adj_`) kendi mevki grubunda standardize edilir,
+ortalama alınır, en son birim vektöre çevrilir (eval ile aynı; eval'de birim vektör metrikte, `pairwise.cosine`).
+Gösterilen percentile'lar: aynı ağırlıklarla lig içi percentile ortalaması.
 """
 import pandas as pd
 
 from ..features.dataset import build_features, load_season
 from ..features.feature_sets import STYLE_FIELDS, search_fields_for
 from ..features.history import blend
+from ..features.league_adjust import PREFIX as SEARCH_PREFIX
 from ..features.percentile import pct_columns
-from .metric import standardize
+from .metric import standardize, unit_rows
 
 HISTORY_SEASONS = 1
 DECAY = 0.5  # önceki sezonun ağırlık çarpanı (dakikayla birlikte)
@@ -49,8 +51,12 @@ def _align(rows: pd.DataFrame, past: pd.DataFrame, values: pd.DataFrame) -> tupl
 def group_vectors(
     features: pd.DataFrame, history: list[pd.DataFrame], group: str, decay: float = DECAY
 ) -> pd.DataFrame:
-    """Mevki grubunun arama vektörleri (satır indeksi = features indeksi). Filtrelerden önce, tüm havuzda."""
-    columns = pct_columns(search_fields_for(group))
+    """Mevki grubunun arama vektörleri: satır = features indeksi, sütun = alan adı (ön eksiz).
+
+    Filtrelerden önce, tüm havuzda kurulur.
+    """
+    fields = search_fields_for(group)
+    columns = pct_columns(fields, SEARCH_PREFIX)
     rows = features[features.position_group == group]
     current = standardize(rows[columns])
     frames, minutes = [current], [rows.minutesPlayed]
@@ -59,7 +65,8 @@ def group_vectors(
         frame, mins = _align(rows, past_rows, standardize(past_rows[columns]))
         frames.append(frame)
         minutes.append(mins)
-    return blend(frames, minutes, decay)
+    blended = blend(frames, minutes, decay)
+    return pd.DataFrame(unit_rows(blended.to_numpy()), index=blended.index, columns=fields)
 
 
 def blended_percentiles(features: pd.DataFrame, history: list[pd.DataFrame], decay: float = DECAY) -> pd.DataFrame:

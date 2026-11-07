@@ -1,7 +1,8 @@
 """Benzerliği istatistik bazında katkılara ayırır.
 
 benzerlik = 1 − Σ (q_i − c_i)² / (2n) = Σ katkı_i,  katkı_i = (1 − (q_i − c_i)² / 2) / n.
-Pozitif katkı: iki oyuncu o istatistikte yakın. Negatif: aralarında ~1,4 standart sapmadan fazla fark var.
+q, c = birim vektörler (RMS = 1, `metric.py`); benzerlik = cosine.
+Pozitif katkı: iki oyuncu o istatistikte yakın. Negatif: aradaki fark √2'den büyük (vektör ölçeğinde).
 Veri olmayan alanın katkısı 0; n = iki oyuncuda da verisi olan alan sayısı (`metric.py` ile aynı).
 
 "Ortak yönler" yakın olanlar arasından ikisinin de belirgin olduğu (ortalamanın aynı tarafında, uzağında)
@@ -12,7 +13,7 @@ import pandas as pd
 
 from ..features.feature_sets import fields_for
 from ..features.labels import label
-from ..features.percentile import PREFIX
+from ..features.percentile import pct_columns
 
 COMMON_COUNT = 5
 DIFFERENT_COUNT = 3
@@ -29,13 +30,14 @@ def explain(
 ) -> pd.DataFrame:
     """Aramada kullanılan her alan için bir satır; `on_radar` = mevkiye özel radar setinde mi.
 
+    vectors: arama vektörleri, sütun = alan adı (`profile.group_vectors`).
     percentiles: gösterilecek `pct_<alan>` değerleri (profil: güncel + önceki sezon ortalaması).
     """
     radar = fields_for(group)
-    fields = _radar_first([col.removeprefix(PREFIX) for col in vectors.columns], radar)
-    columns = [PREFIX + f for f in fields]
-    q = vectors.loc[query_index, columns].to_numpy(dtype=float)
-    c = vectors.loc[candidate_index, columns].to_numpy(dtype=float)
+    fields = _radar_first(list(vectors.columns), radar)
+    columns = pct_columns(fields)
+    q = vectors.loc[query_index, fields].to_numpy(dtype=float)
+    c = vectors.loc[candidate_index, fields].to_numpy(dtype=float)
     gaps = (q - c) ** 2
     missing = np.isnan(gaps)  # iki oyuncudan birinin liginde veri yok → alan atlanır, katkı 0
     n = np.count_nonzero(~missing)

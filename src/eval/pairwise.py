@@ -1,25 +1,12 @@
 """Sorgu × aday benzerlik matrisleri. Büyük değer = daha benzer.
 
-NaN = ligde veri yok (örn. TFF'de xG). Cosine/Pearson'da 0 (ortalama) sayılır: çarpıma katkısı olmaz.
-Öklid'de o alan o çift için atlanır (arama servisiyle aynı, `src/similarity/metric.py`).
+NaN = ligde veri yok (örn. TFF'de xG): o alan o çift için atlanır (arama servisiyle aynı, `src/similarity/metric.py`).
+Cosine, servisteki gibi hesaplanır: satırlar birim vektöre (RMS = 1) çevrilir, sonra Öklid. Veri eksik değilse
+sıralama klasik cosine ile birebir aynı.
 """
 import numpy as np
 
-
-def _unit_rows(m: np.ndarray) -> np.ndarray:
-    norms = np.linalg.norm(m, axis=1, keepdims=True)
-    return m / np.where(norms == 0, 1, norms)
-
-
-def cosine(q: np.ndarray, p: np.ndarray) -> np.ndarray:
-    q, p = np.nan_to_num(q), np.nan_to_num(p)
-    return _unit_rows(q) @ _unit_rows(p).T
-
-
-def pearson(q: np.ndarray, p: np.ndarray) -> np.ndarray:
-    """Satır ortalaması çıkarılmış cosine: genel seviyeden bağımsız, sadece profilin şekli."""
-    q, p = np.nan_to_num(q), np.nan_to_num(p)
-    return cosine(q - q.mean(axis=1, keepdims=True), p - p.mean(axis=1, keepdims=True))
+from ..similarity.metric import unit_rows
 
 
 def neg_euclidean(q: np.ndarray, p: np.ndarray) -> np.ndarray:
@@ -29,6 +16,20 @@ def neg_euclidean(q: np.ndarray, p: np.ndarray) -> np.ndarray:
     squared = (q0**2) @ p_has.T + q_has @ (p0**2).T - 2 * q0 @ p0.T
     shared = q_has @ p_has.T
     return -np.sqrt(np.maximum(squared, 0) / np.maximum(shared, 1))
+
+
+def cosine(q: np.ndarray, p: np.ndarray) -> np.ndarray:
+    return neg_euclidean(unit_rows(q), unit_rows(p))
+
+
+def _center_rows(m: np.ndarray) -> np.ndarray:
+    present = np.count_nonzero(~np.isnan(m), axis=1)
+    return m - (np.nansum(m, axis=1) / np.maximum(present, 1))[:, None]
+
+
+def pearson(q: np.ndarray, p: np.ndarray) -> np.ndarray:
+    """Satır ortalaması çıkarılmış cosine: genel seviyeden bağımsız, sadece profilin şekli."""
+    return cosine(_center_rows(q), _center_rows(p))
 
 
 SIMILARITY = {"cosine": cosine, "pearson": pearson, "euclidean": neg_euclidean}
