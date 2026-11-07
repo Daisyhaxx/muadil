@@ -18,11 +18,12 @@
 6. [ ] **Ürün · Shortlist + CSV dışa aktarma.**
 7. [ ] **Ürün · Supabase'e arama logu** (hangi oyuncular, hangi filtrelerle aranıyor).
 8. [ ] **Ürün · Sezonlar arası gelişim.** Oyuncunun 23/24 → 25/26 percentile değişimini gösteren sayfa.
-9. [ ] **Mühendislik · GitHub'a gönder.** Remote yok; ham veri `.gitignore`'da, sadece kod + türetilmiş sonuçlar.
-10. [ ] **Veri · 22/23 sezonu.** 3 sezonluk profili test etmek için. 6 lig; çekimi 2 güne böl.
+9. [ ] **Veri · 22/23 sezonu.** 3 sezonluk profili test etmek için. 6 lig; çekimi 2 güne böl.
 
 ## Tamamlananlar
 
+- [x] GitHub'a gönderildi: public repo [Daisyhaxx/muadil](https://github.com/Daisyhaxx/muadil). Veri ve veri
+  çekme kodu repoda ve geçmişinde yok; commit e-postası GitHub noreply (07.11.2026)
 - [x] Ligler arası arama: log per-90, lig farkı ½ (α = 0,5) + cosine. Önceki yönteme (lig içi percentile · Öklid)
   göre lig değiştirenlerde MRR 0.424 → 0.460 (+0.036 [+0.000, +0.072]), takım değiştirenlerde 0.440 → 0.485
   (+0.046), genelde 0.573 → 0.583, kayıp yok. Eski "per-90 daha iyi" bulgusunun yarısı metrikten (cosine) çıktı.
