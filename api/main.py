@@ -11,6 +11,6 @@ from .routes import router
 
 WEB_DIR = Path(__file__).resolve().parents[1] / "web"
 
-app = FastAPI(title="Benzer Oyuncu Bulucu")
+app = FastAPI(title="Muadil")
 app.include_router(router)
 app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")

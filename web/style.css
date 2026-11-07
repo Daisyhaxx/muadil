@@ -36,6 +36,7 @@ body { margin: 0; background: var(--page); color: var(--ink); font-size: 14px; }
 main { max-width: 1320px; margin: 0 auto; padding: 0 20px 48px; }
 .top { display: flex; align-items: center; gap: 12px; max-width: 1320px; margin: 0 auto; padding: 20px; }
 .top h1 { font-size: 20px; font-weight: 600; margin: 0; }
+.top h1 .tagline { font-size: 14px; font-weight: 400; color: var(--ink-2); margin-left: 6px; }
 .badge { font-size: 12px; color: var(--ink-2); border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px; }
 
 /* Arama */

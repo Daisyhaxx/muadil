@@ -1,6 +1,7 @@
-# Benzer Oyuncu Bulucu
+# Muadil
 
-Bir futbolcunun istatistik profiline en çok benzeyen oyuncuları bulur. Filtreler: yaş, lig, piyasa değeri, sözleşme, ayak.
+Bir futbolcunun muadilini istatistikle bulur: oyun profiline en çok benzeyen oyuncuları, tercihen daha genç ya da
+daha ucuz olanları. Filtreler: yaş, lig, piyasa değeri, sözleşme, ayak.
 Örnek: "Süper Lig'de şu forvete en benzer 23 yaş altı oyuncu kim?"
 
 Veri: Sofascore'un oyuncu sezon istatistikleri. 6 lig (Süper Lig, TFF 1. Lig, Premier League, Eredivisie,
