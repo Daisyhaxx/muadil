@@ -5,6 +5,7 @@ data/processed/
 # Veri çekme kodu ve yerel çalışma notları public repoda yok (kaynağın kullanım şartları)
 src/ingest/
 CLAUDE.md
+ROADMAP.md
 
 # Python
 __pycache__/

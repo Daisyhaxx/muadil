@@ -9,8 +9,6 @@ Primeira Liga, Belçika Pro League) × 3 sezon (23/24, 24/25, 25/26). Lig-sezon 
 900+ dakika oynayanları kullanılıyor. **Veri ve veri çekme kodu bu repoda yok**; burada modelleme, değerlendirme,
 API ve arayüz kodu ile türetilmiş sonuçlar (değerlendirme tabloları) paylaşılıyor. Beklenen veri formatı aşağıda.
 
-Yol haritası ve ilerleme: [`ROADMAP.md`](ROADMAP.md).
-
 ## Çalıştırma
 
 ```
