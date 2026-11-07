@@ -20,7 +20,7 @@ NORMALIZATIONS = {
     "pct_league": ("Lig içi percentile", PREFIX),
     "pct_season": ("Ligler arası percentile", SEASON_PREFIX),
     "per90_z": ("Per-90 z-skor", ""),
-    "log_adj": ("Log per-90, lig farkı ½", ADJUSTED_PREFIX),
+    "log_adj": ("Log per-90 + PAdj, lig farkı ½", ADJUSTED_PREFIX),
 }
 METRICS = {"cosine": "Cosine", "pearson": "Pearson", "euclidean": "Öklid"}
 

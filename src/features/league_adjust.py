@@ -8,8 +8,6 @@ Sayım alanları log ölçeğine alınır (çarpık dağılım, oranlar); oran a
 birbirine yakın düşer (lig parmak izi). α = 0,5'te filtresiz aramada sonuçların lig dağılımı havuzla aynı ve lig
 değiştirenler en az α = 1 kadar iyi bulunuyor (`python -m src.eval.league_eval`, README).
 """
-from collections.abc import Sequence
-
 import numpy as np
 import pandas as pd
 
@@ -22,11 +20,14 @@ LEAGUE_WEIGHT = 0.5  # α
 
 
 def add_league_adjusted(
-    df: pd.DataFrame, fields: Sequence[str], alpha: float = LEAGUE_WEIGHT, prefix: str = PREFIX
+    df: pd.DataFrame, values: pd.DataFrame, alpha: float = LEAGUE_WEIGHT, prefix: str = PREFIX
 ) -> pd.DataFrame:
-    """`<prefix><alan>` sütunlarını ekler. NaN (ligde veri yok, örn. TFF'de xG) NaN kalır."""
-    fields = list(fields)
-    x = df[fields].astype(float)
+    """`values` (per-90, sütun = alan adı, df ile aynı indeks) → df'e `<prefix><alan>` sütunları.
+
+    Grup anahtarları df'ten alınır. NaN (ligde veri yok, örn. TFF'de xG) NaN kalır.
+    """
+    fields = list(values.columns)
+    x = values.astype(float).copy()
     counts = [f for f in fields if f not in PERCENT_FIELDS]
     x[counts] = np.log1p(x[counts])
     league_mean = x.groupby([df[k] for k in GROUP_KEYS]).transform("mean")

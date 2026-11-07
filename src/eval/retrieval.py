@@ -14,14 +14,18 @@ from ..features.dataset import MIN_MINUTES, build_features, load_season
 from ..features.feature_sets import STYLE_FIELDS
 from ..features.league_adjust import LEAGUE_WEIGHT
 from ..features.percentile import add_percentiles
+from ..features.team_adjust import POSSESSION_ELASTICITY
 from ..similarity.metric import standardize as z_score
 from .pairwise import SIMILARITY
 from .variants import SEASON_PREFIX, Variant
 
 
-def season_table(year: str, min_minutes: int = MIN_MINUTES, league_weight: float = LEAGUE_WEIGHT) -> pd.DataFrame:
+def season_table(
+    year: str, min_minutes: int = MIN_MINUTES, league_weight: float = LEAGUE_WEIGHT,
+    possession_beta: float = POSSESSION_ELASTICITY,
+) -> pd.DataFrame:
     """Oyuncu başına tek satır (sezonda iki ligde oynadıysa en çok dakikalı olan)."""
-    df = build_features(load_season(year), min_minutes, league_weight)
+    df = build_features(load_season(year), min_minutes, league_weight, possession_beta)
     df = add_percentiles(df, STYLE_FIELDS, keys=["season_year", "position_group"], prefix=SEASON_PREFIX)
     return df.sort_values("minutesPlayed", ascending=False).drop_duplicates("player_id")
 
