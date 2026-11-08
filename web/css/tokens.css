@@ -1,0 +1,71 @@
+/* Semantik tasarım değerleri. Görünüm sistem ayarını izler; sayfada ayrı tema anahtarı yok.
+   Ekrandaki tek renk iki oyuncuya ait: arayüzün kalanı gri tonlarında. */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#f2f2f7, #1c1c1e);
+  --surface: light-dark(#ffffff, #121214);
+  --elevated: light-dark(#ffffff, #2c2c2e);
+
+  --label: light-dark(#1d1d1f, #f5f5f7);
+  --label-2: light-dark(#5a5a61, #b0b0b7);
+  --label-3: light-dark(#66666d, #9c9ca3);
+  --label-on-fill: light-dark(#48484f, #d6d6dc);  /* seçili satırdaki ikincil metin */
+  --on-label: light-dark(#ffffff, #000000);
+  --separator: light-dark(rgb(60 60 67 / .2), rgb(235 235 245 / .16));
+  --fill: light-dark(rgb(118 118 128 / .12), rgb(118 118 128 / .24));
+  --fill-strong: light-dark(rgb(118 118 128 / .2), rgb(118 118 128 / .36));
+
+  /* Oyuncu kimlikleri: renk + biçim (daire / baklava). */
+  --query: light-dark(#2a78d6, #3987e5);
+  --candidate: light-dark(#eb6834, #d95926);
+  --shared: light-dark(#dfdfe5, #38383d);
+
+  /* Yalnızca işlev katmanı: çubuk, arama önerileri, menü, geri düğmesi. */
+  --glass-fill: light-dark(rgb(255 255 255 / .72), rgb(44 44 46 / .68));
+  --glass-edge: light-dark(rgb(255 255 255 / .7), rgb(255 255 255 / .12));
+  --glass-filter: blur(24px) saturate(1.4);
+  --glass-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 10px 30px rgb(0 0 0 / .14);
+
+  /* Metin stilleri rem cinsinden: tarayıcı yazı boyutuyla birlikte büyür. */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --title-1: 1.75rem;
+  --title-2: 1.375rem;
+  --title-3: 1.25rem;
+  --body: 1.0625rem;
+  --callout: 1rem;
+  --subhead: .9375rem;
+  --footnote: .8125rem;
+  --caption-1: .75rem;
+  --caption-2: .6875rem;
+
+  --bar-h: 3.25rem;
+  --control-h: 2.25rem;
+  --pill-h: 2rem;
+  --row-pad: .625rem;
+  --kb: 0px;
+  --top-inset: calc(var(--bar-h) + 1.625rem + env(safe-area-inset-top));
+}
+
+/* Dokunmatikte 44 pt hedef */
+@media (pointer: coarse) {
+  :root { --control-h: 2.75rem; --pill-h: 2.75rem; --row-pad: .75rem; }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --label-2: light-dark(#3a3a40, #d8d8de);
+    --label-3: light-dark(#48484f, #c8c8ce);
+    --separator: light-dark(rgb(60 60 67 / .55), rgb(235 235 245 / .5));
+    --query: light-dark(#1a5fb4, #6ba6f0);
+    --candidate: light-dark(#bf4a18, #f0814e);
+    --shared: light-dark(#c9c9d1, #4a4a50);
+    --glass-fill: var(--elevated);
+    --glass-edge: var(--separator);
+    --glass-filter: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-fill: var(--elevated); --glass-filter: none; }
+}

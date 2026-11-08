@@ -1,0 +1,49 @@
+/* Marka yazısı. Lisans: SIL OFL 1.1 (fonts/OFL.txt) */
+@font-face {
+  font-family: "Unbounded";
+  src: url("../fonts/Unbounded-Variable.ttf") format("truetype");
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--label);
+  font: 400 var(--body)/1.3 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p, ol, ul, fieldset { margin: 0; padding: 0; border: 0; }
+ol, ul { list-style: none; }
+button, input, select { font: inherit; color: inherit; }
+button { padding: 0; border: 0; background: none; text-align: inherit; cursor: pointer; }
+table { border-collapse: collapse; width: 100%; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 2px solid var(--label); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.icon {
+  width: 1em; height: 1em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Oyuncu işaretleri: aynı anlam, iki biçim */
+.mark { display: inline-block; flex: none; background: var(--mark); }
+.mark.a { --mark: var(--query); width: .5625rem; height: .5625rem; border-radius: 50%; }
+.mark.b { --mark: var(--candidate); width: .5rem; height: .5rem; margin-inline: .0313rem; transform: rotate(45deg); }
+
+@media (forced-colors: active) {
+  .mark { forced-color-adjust: none; background: CanvasText; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,102 @@
+/* Ana ekran: üst bar yok; sırayla marka, büyük cam arama kutusu, davet metni ve örnekler.
+   Aynı .bar ve .search öğeleri kullanılır; oyuncu seçilince normal yerlerine döner. */
+:root {
+  --display: min(clamp(4.5rem, 9vw, 6.5rem), 24vw);
+  --hero-field-h: 3.75rem;
+  --hero-glass-fill: light-dark(rgb(255 255 255 / .46), rgb(18 18 20 / .34));
+  --hero-glass-sheen: light-dark(rgb(255 255 255 / .22), rgb(255 255 255 / .05));
+  --hero-glass-edge: light-dark(rgb(255 255 255 / .9), rgb(255 255 255 / .24));
+  --hero-glass-shine: light-dark(rgb(255 255 255 / .95), rgb(255 255 255 / .38));
+  --hero-glass-glint: light-dark(rgb(255 255 255 / .16), rgb(255 255 255 / .04));
+  --hero-glass-shadow: light-dark(rgb(0 0 0 / .08), rgb(0 0 0 / .4));
+  --hero-glass-filter: blur(22px) saturate(1.4);
+  --hero-glow-a: light-dark(color-mix(in srgb, var(--query) 58%, transparent), color-mix(in srgb, var(--query) 30%, transparent));
+  --hero-glow-b: light-dark(color-mix(in srgb, var(--candidate) 58%, transparent), color-mix(in srgb, var(--candidate) 30%, transparent));
+  --hero-placeholder: light-dark(#5a5a61, #d6d6dc);
+}
+
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  :root {
+    --hero-glass-fill: var(--elevated); --hero-glass-sheen: transparent; --hero-glass-edge: var(--separator);
+    --hero-glass-filter: none; --hero-glow-a: transparent; --hero-glow-b: transparent;
+  }
+}
+
+body[data-state="ready"] .empty, body[data-state="empty"] .split { display: none; }
+body[data-state="empty"] { overflow-y: auto; }
+body[data-state="empty"] .edge { display: none; }
+
+body[data-state="empty"] .bar {
+  position: relative; inset: auto;
+  flex-direction: column; justify-content: flex-start; gap: 3rem;
+  width: min(42rem, 100% - 2rem); height: auto;
+  margin: calc(clamp(3.5rem, 14vh, 8rem) + env(safe-area-inset-top)) auto 0;
+  padding: 0;
+}
+body[data-state="empty"] .bar::before { display: none; }
+
+body[data-state="empty"] .bar-title {
+  position: static; width: auto; height: auto; overflow: visible; clip-path: none;
+  font-size: var(--display);
+}
+
+/* Büyük arama kutusu. Boş sayfada camın kırılacak bir şeyi olmaz:
+   arkasındaki iki oyuncu rengi ortada örtüşür, radardaki fikrin aynısı. */
+body[data-state="empty"] .search { width: 100%; isolation: isolate; }
+body[data-state="empty"] .search::after {
+  content: ""; position: absolute; inset: -2.5rem -3rem; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(46% 62% at 32% 50%, var(--hero-glow-a), transparent 72%),
+    radial-gradient(46% 62% at 68% 50%, var(--hero-glow-b), transparent 72%);
+}
+body[data-state="empty"] .search::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 999px;
+  background:
+    linear-gradient(to bottom, var(--hero-glass-sheen), transparent 58%),
+    var(--hero-glass-fill);
+  border: 1px solid var(--hero-glass-edge);
+  box-shadow:
+    inset 0 1px 1px var(--hero-glass-shine),
+    inset 0 -1px 1px var(--hero-glass-glint),
+    inset 0 0 1.25rem var(--hero-glass-glint),
+    0 1px 2px rgb(0 0 0 / .05),
+    0 .75rem 2rem var(--hero-glass-shadow);
+  -webkit-backdrop-filter: var(--hero-glass-filter);
+  backdrop-filter: var(--hero-glass-filter);
+}
+body[data-state="empty"] .search input {
+  height: var(--hero-field-h);
+  padding: 0 3.5rem 0 3.5rem;
+  background: transparent;
+  font-size: var(--title-3);
+}
+body[data-state="empty"] .search-icon { left: 1.375rem; font-size: var(--title-3); color: var(--label); }
+body[data-state="empty"] .search input::placeholder { color: var(--hero-placeholder); }
+body[data-state="empty"] .search-clear { right: .75rem; width: 2.25rem; height: 2.25rem; font-size: var(--title-3); color: var(--label-2); }
+body[data-state="empty"] .suggestions { top: calc(100% + .625rem); bottom: auto; left: 0; right: 0; width: auto; }
+
+/* Davet metni ve örnekler: arama kutusunun altında */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .625rem; padding: 3.5rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom)); text-align: center;
+}
+.empty-title { font-size: var(--title-1); font-weight: 700; letter-spacing: -.015em; }
+.empty-text { max-width: 30rem; color: var(--label-2); }
+.examples { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: 1.25rem; max-width: 36rem; }
+.example {
+  display: inline-flex; align-items: center; gap: .375rem;
+  min-height: var(--control-h); padding: .4375rem .875rem;
+  border-radius: 999px; background: var(--fill);
+  font-size: var(--subhead); font-weight: 500;
+}
+@media (hover: hover) { .example:hover { background: var(--fill-strong); } }
+.example span { font-size: var(--footnote); font-weight: 400; color: var(--label-2); }
+
+@media (forced-colors: active) {
+  body[data-state="empty"] .search::after { display: none; }
+  body[data-state="empty"] .search::before { border-color: CanvasText; }
+}
+
+@media (max-width: 53.99em) {
+  body[data-state="empty"] .search::after { inset: -2rem -1rem; }
+}

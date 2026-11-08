@@ -11,6 +11,16 @@ from .routes import router
 
 WEB_DIR = Path(__file__).resolve().parents[1] / "web"
 
+
+class WebFiles(StaticFiles):
+    """Tarayıcı her açılışta sunucuya sorar (değişmediyse 304); arayüzün eski hali önbellekte kalmaz."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 app = FastAPI(title="Muadil")
 app.include_router(router)
-app.mount("/", StaticFiles(directory=WEB_DIR, html=True), name="web")
+app.mount("/", WebFiles(directory=WEB_DIR, html=True), name="web")

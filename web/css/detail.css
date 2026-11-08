@@ -1,0 +1,80 @@
+/* Sağ sütun: iki oyuncunun karşılaşması ve neden benzedikleri. */
+.detail-pane {
+  overflow-y: auto; overscroll-behavior: contain; outline: none;
+  padding: var(--top-inset) 2rem 4rem;
+  container: detail / inline-size;
+}
+.detail-inner { max-width: 48rem; margin-inline: auto; transition: opacity .15s; }
+.detail-inner[aria-busy="true"] { opacity: .55; }
+
+/* Skor tabelası gibi: iki oyuncu yanlarda, benzerlik ortada */
+.matchup { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1rem; align-items: start; padding-top: .5rem; }
+.side h2 { display: inline; font-size: var(--title-3); font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.side-name { display: flex; align-items: baseline; gap: .4375rem; }
+.side.a { text-align: end; }
+.side.a .side-name { flex-direction: row-reverse; justify-content: flex-start; }
+.side .mark { position: relative; top: -.1em; }
+.side p { font-size: var(--footnote); color: var(--label-2); margin-top: .1875rem; }
+.verdict-score { min-width: 5rem; text-align: center; }
+.verdict-score strong { display: block; font-size: var(--title-1); font-weight: 700; line-height: 1.1; letter-spacing: -.015em; }
+.verdict-score span { font-size: var(--caption-1); color: var(--label-2); }
+
+.tradeoff { margin-top: 1rem; text-align: center; font-size: var(--callout); font-weight: 600; }
+
+.h2h { max-width: 30rem; margin: 1rem auto 0; font-size: var(--subhead); font-variant-numeric: tabular-nums; }
+.h2h th, .h2h td { padding: .4375rem .25rem; border-top: 1px solid var(--separator); }
+.h2h th { width: 6.5rem; font-size: var(--footnote); font-weight: 400; color: var(--label-2); text-align: center; }
+.h2h td { width: calc((100% - 6.5rem) / 2); }
+.h2h td.a { text-align: end; }
+.h2h td.b { text-align: start; }
+/* Oyuncular yan yana duruyorsa sütun başlığına gerek yok; alt alta geçince işaretler sütunu belirtir */
+.h2h thead { display: none; }
+.h2h thead th, .h2h thead td { border-top: 0; padding-bottom: .25rem; width: auto; }
+.h2h thead th.a { text-align: end; }
+.h2h thead th.b { text-align: start; }
+
+.block { margin-top: 2.5rem; }
+.block-title { font-size: var(--title-3); font-weight: 700; letter-spacing: -.01em; }
+.block-lead { margin-top: .25rem; font-size: var(--subhead); color: var(--label-2); }
+
+/* Benzeşen ve ayrışan istatistikler: tek eksende iki oyuncu */
+.traits { display: grid; gap: 1.75rem; margin-top: 2.5rem; }
+@container detail (min-width: 40rem) { .traits { grid-template-columns: 1fr 1fr; gap: 2.5rem; } }
+.traits h3 { font-size: var(--body); font-weight: 600; margin-bottom: .25rem; }
+.bell { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .75rem; align-items: baseline; padding: .5rem 0 .625rem; border-top: 1px solid var(--separator); }
+.bell-label { font-size: var(--subhead); }
+.bell-values { display: inline-flex; align-items: center; gap: .3125rem; font-size: var(--footnote); color: var(--label-2); font-variant-numeric: tabular-nums; }
+.bell-values .mark:nth-of-type(2) { margin-inline-start: .3125rem; }
+.bell-track { grid-column: 1 / -1; position: relative; height: .625rem; margin: .4375rem .375rem 0; }
+.bell-track::before { content: ""; position: absolute; inset: calc(50% - 1px) 0 auto; height: 2px; border-radius: 1px; background: var(--fill-strong); }
+.bell-gap { position: absolute; top: calc(50% - 1px); height: 2px; background: var(--label-3); }
+.bell-track .mark { position: absolute; top: 50%; margin: 0; translate: -50% -50%; box-shadow: 0 0 0 2px var(--surface); }
+.empty-note { padding: .5rem 0; font-size: var(--subhead); color: var(--label-2); border-top: 1px solid var(--separator); }
+
+/* Tüm istatistikler: grafiğin tablo karşılığı */
+.all { margin-top: 2rem; border-top: 1px solid var(--separator); }
+.all summary { display: flex; align-items: center; gap: .375rem; min-height: var(--control-h); padding-block: .625rem; font-size: var(--callout); font-weight: 600; cursor: pointer; list-style: none; }
+.all summary::-webkit-details-marker { display: none; }
+.all summary .icon { font-size: var(--subhead); color: var(--label-2); transition: rotate .2s; }
+.all[open] summary .icon { rotate: 90deg; }
+.all th, .all td { padding: .4375rem .25rem; font-size: var(--subhead); border-top: 1px solid var(--separator); font-variant-numeric: tabular-nums; text-align: end; }
+.all th:first-child, .all td:first-child { text-align: start; }
+.all thead th { font-size: var(--footnote); font-weight: 400; color: var(--label-2); border-top: 0; }
+.all-note { padding: .625rem 0 0; font-size: var(--footnote); color: var(--label-2); }
+
+.detail-error { padding: 3rem 1rem; text-align: center; color: var(--label-2); }
+
+@media (max-width: 53.99em) {
+  .detail-pane { padding: calc(4.5rem + env(safe-area-inset-top)) 1rem calc(2.5rem + env(safe-area-inset-bottom)); }
+}
+
+/* Çok büyük yazıda yan yana hizalar alt alta geçer */
+@container detail (max-width: 26rem) {
+  .matchup { grid-template-columns: minmax(0, 1fr) auto; }
+  .side.a { grid-column: 1; grid-row: 1; text-align: start; }
+  .side.a .side-name { flex-direction: row; }
+  .side.b { grid-column: 1; grid-row: 2; }
+  .verdict-score { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .tradeoff { text-align: start; }
+  .h2h thead { display: table-header-group; }
+}

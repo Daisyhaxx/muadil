@@ -2,60 +2,78 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Muadil · benzer oyuncu bulucu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>Muadil</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="fonts/Unbounded-Variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/chrome.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/list.css">
+  <link rel="stylesheet" href="css/detail.css">
+  <link rel="stylesheet" href="css/chart.css">
+  <link rel="stylesheet" href="css/workspace.css">
 </head>
-<body>
-  <header class="top">
-    <h1>Muadil <span class="tagline">benzer oyuncu bulucu</span></h1>
-    <span id="season" class="badge"></span>
+<body data-state="empty" data-view="list">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.75"/><path d="M10.6 10.6 14 14"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor" stroke="none"/><path d="M5.6 5.6l4.8 4.8m0-4.8-4.8 4.8" stroke="var(--surface)"/></symbol>
+    <symbol id="i-right" viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></symbol>
+    <symbol id="i-left" viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></symbol>
+    <symbol id="i-updown" viewBox="0 0 16 16"><path d="M5 6.2 8 3.4l3 2.8M5 9.8l3 2.8 3-2.8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5 6.8 11.8 12.5 4.8"/></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 16 16"><rect x="1.75" y="2.75" width="12.5" height="10.5" rx="2.5"/><path d="M6 2.75v10.5"/></symbol>
+  </svg>
+
+  <div class="edge" aria-hidden="true"></div>
+
+  <header class="bar glass">
+    <button id="sidebar-toggle" type="button" class="sidebar-toggle glass" aria-controls="list-pane">
+      <svg class="icon" aria-hidden="true"><use href="#i-sidebar"/></svg>
+    </button>
+    <h1 class="bar-title">Muadil</h1>
+    <div class="search" role="search">
+      <svg class="icon search-icon" aria-hidden="true"><use href="#i-search"/></svg>
+      <label for="search-input" class="sr-only">Oyuncu ara</label>
+      <input id="search-input" type="search" placeholder="Oyuncu ara" autocomplete="off" spellcheck="false"
+             enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false">
+      <button id="search-clear" type="button" class="search-clear" aria-label="Aramayı temizle" hidden>
+        <svg class="icon" aria-hidden="true"><use href="#i-clear"/></svg>
+      </button>
+      <ul id="suggestions" class="suggestions glass" role="listbox" aria-label="Oyuncu önerileri" hidden></ul>
+    </div>
   </header>
 
-  <main>
-    <section class="search">
-      <label for="player-input" class="sr-only">Oyuncu ara</label>
-      <input id="player-input" type="search" placeholder="Oyuncu ara, örn. Orkun Kökçü" autocomplete="off"
-             role="combobox" aria-controls="suggestions" aria-expanded="false">
-      <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+  <button id="back" type="button" class="back glass">
+    <svg class="icon" aria-hidden="true"><use href="#i-left"/></svg>Muadiller
+  </button>
+
+  <section id="empty" class="empty">
+    <h2 class="empty-title">Kimin muadilini arıyorsun?</h2>
+    <p id="empty-text" class="empty-text"></p>
+    <div id="examples" class="examples"></div>
+  </section>
+
+  <main class="split">
+    <section id="list-pane" class="list-pane" aria-label="Muadil listesi">
+      <p class="list-brand" aria-hidden="true">Muadil</p>
+      <div id="query" class="query"></div>
+      <form id="filters" class="scope" autocomplete="off"></form>
+      <div class="list-head">
+        <h3 class="section-title">Muadiller</h3>
+        <p id="status" class="status" role="status"></p>
+      </div>
+      <ol id="results" class="results"></ol>
+      <div id="notice" class="notice" hidden></div>
+      <button id="more" type="button" class="more" hidden>Daha fazla göster</button>
+      <p id="provenance" class="provenance"></p>
     </section>
 
-    <form id="filters" class="filters" autocomplete="off">
-      <label>Maks. yaş <input name="max_age" type="number" min="15" max="45" placeholder="—"></label>
-      <label>Maks. değer (M€) <input name="max_value" type="number" min="0" step="0.5" placeholder="—"></label>
-      <label>Ayak
-        <select name="foot">
-          <option value="">Hepsi</option>
-          <option value="Left">Sol</option>
-          <option value="Right">Sağ</option>
-          <option value="Both">İki ayak</option>
-        </select>
-      </label>
-      <label>Sözleşme bitişi ≤ <input name="contract_until" type="date"></label>
-      <label>Sonuç <input name="top" type="number" min="1" max="50" value="10"></label>
-      <fieldset id="league-filter" class="leagues"><legend>Ligler (boş = hepsi)</legend></fieldset>
-    </form>
-
-    <section id="query-card" class="query-card" hidden></section>
-    <p id="status" class="status">Bir oyuncu ara; aynı mevkideki en benzer oyuncular listelenir.</p>
-
-    <div class="layout">
-      <section class="results">
-        <table id="results-table" hidden>
-          <thead>
-            <tr>
-              <th>#</th><th>Oyuncu</th><th>Lig</th><th class="num">Yaş</th><th>Mevki</th>
-              <th class="num">Dk</th><th class="num">Değer</th><th>Benzerlik</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-      <section id="compare" class="compare" hidden></section>
-    </div>
+    <section id="detail" class="detail-pane" aria-label="Karşılaştırma" tabindex="-1"></section>
   </main>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="scripts/app.js"></script>
 </body>
 </html>
