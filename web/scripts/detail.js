@@ -1,5 +1,5 @@
 // Karşılaştırma görünümü. İskelet bir kez kurulur; radar aynı kalır ki aday değişince şekil akabilsin.
-import { esc, foot, icon, int, leagueName, money, monthYear, pct, profileLabel, score, tradeoff } from "./format.js";
+import { confidence, esc, foot, icon, int, leagueName, money, monthYear, pct, profileLabel, score, tradeoff } from "./format.js";
 import { createRadar } from "./radar.js";
 
 const SKELETON = `
@@ -29,6 +29,7 @@ const SKELETON = `
     </details>
   </div>`;
 
+const REFERENCE_MINUTES = 900; // altındaki oyuncular düzeltilerek gösterilir (src/features/shrinkage.py)
 const hasBoth = (s) => s.query_pct != null && s.candidate_pct != null;
 const marks = {
   a: `<i class="mark a" aria-hidden="true"></i>`,
@@ -49,6 +50,7 @@ const facts = (q, c) => [
   ["Mevki", q.positions.join(", ") || "—", c.positions.join(", ") || "—"],
   ["Ayak", foot(q.preferred_foot), foot(c.preferred_foot)],
   ["Dakika", int(q.minutes), int(c.minutes)],
+  ["Veri güveni", confidence(q.confidence), confidence(c.confidence)],
 ];
 
 function bell(s, names) {
@@ -112,7 +114,9 @@ export function createDetail(root) {
       $(".chart-note").textContent =
         `Mevki içinde 0–100 yüzdelik, 90 dakika başına; ${profileLabel()}. ` +
         `Benzerlik ${stats.length} istatistikten hesaplanır, radar ${radarStats.length} tanesini gösterir.` +
-        (missing.length ? ` Bu ligde verisi olmadığı için gösterilmiyor: ${missing.join(", ")}.` : "");
+        (missing.length ? ` Bu ligde verisi olmadığı için gösterilmiyor: ${missing.join(", ")}.` : "") +
+        (q.minutes < REFERENCE_MINUTES || c.minutes < REFERENCE_MINUTES
+          ? ` ${REFERENCE_MINUTES} dakikanın altında oynayanların değerleri mevki ortalamasına doğru çekildi.` : "");
       radar.update(radarStats.filter(hasBoth), names);
 
       $(".common").innerHTML = bells(common, names, "Belirgin ortak yön yok.");

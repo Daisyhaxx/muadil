@@ -21,6 +21,7 @@ export const score = (v) => twoDecimals.format(v);
 export const pct = (v) => (v == null ? "—" : Math.round(v * 100));
 export const int = (v) => (v == null ? "—" : integer.format(v));
 export const foot = (f) => ({ Left: "Sol", Right: "Sağ", Both: "İki ayak" })[f] ?? "—";
+export const confidence = (c) => ({ low: "Düşük", medium: "Orta", high: "Yüksek" })[c] ?? "—";
 export const monthYear = (d) =>
   d ? new Date(d).toLocaleDateString("tr-TR", { month: "short", year: "numeric" }) : "—";
 

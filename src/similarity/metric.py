@@ -11,15 +11,17 @@ import numpy as np
 import pandas as pd
 
 
-def standardize(matrix: pd.DataFrame) -> pd.DataFrame:
+def standardize(matrix: pd.DataFrame, reference: pd.Series | None = None) -> pd.DataFrame:
     """Z-skor. Havuzda sabit olan sütun → 0 (herkes ortalama). NaN (veri yok) korunur.
 
     Sezonda hiç gelmeyen alan (örn. 24/25'te outfielderBlocks) tamamen NaN kalır; çok sezonlu profilde
     o alan diğer sezondan gelir, tek sezonda benzerlikte atlanır. Eval de bu fonksiyonu kullanır.
+    `reference` verilirse ortalama ve sapma sadece bu satırlardan gelir (az dakikalılar ölçeği değiştirmez).
     """
     matrix = matrix.astype(float)
-    std = matrix.std()
-    z = (matrix - matrix.mean()) / std.where(std > 0)
+    basis = matrix if reference is None else matrix[reference]
+    std = basis.std()
+    z = (matrix - basis.mean()) / std.where(std > 0)
     z.loc[:, std == 0] = 0.0
     return z
 

@@ -58,7 +58,7 @@ def group_vectors(
     fields = search_fields_for(group)
     columns = pct_columns(fields, SEARCH_PREFIX)
     rows = features[features.position_group == group]
-    current = standardize(rows[columns])
+    current = standardize(rows[columns], rows.is_reference)
     frames, minutes = [current], [rows.minutesPlayed]
     for past in history:
         past_rows = past[past.position_group == group]
@@ -67,6 +67,15 @@ def group_vectors(
         minutes.append(mins)
     blended = blend(frames, minutes, decay)
     return pd.DataFrame(unit_rows(blended.to_numpy()), index=blended.index, columns=fields)
+
+
+def effective_minutes(features: pd.DataFrame, history: list[pd.DataFrame], decay: float = DECAY) -> pd.Series:
+    """Profile giren veri miktarı: güncel dakika + önceki sezonların dakikası × decay**k (`blend` ağırlıklarıyla aynı)."""
+    total = features.minutesPlayed.astype(float)
+    for k, past in enumerate(history, 1):
+        _, minutes = _align(features, past, past[[]])
+        total = total + minutes.fillna(0) * decay**k
+    return total
 
 
 def blended_percentiles(features: pd.DataFrame, history: list[pd.DataFrame], decay: float = DECAY) -> pd.DataFrame:

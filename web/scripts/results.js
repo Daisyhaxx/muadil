@@ -1,11 +1,15 @@
 // Aranan oyuncu başlığı ve muadil listesi.
-import { esc, groupName, icon, leagueName, money, score } from "./format.js";
+import { esc, groupName, icon, int, leagueName, money, score } from "./format.js";
+
+// Az veriyle kurulan profil listede işaretlenir; orta ve yüksek güven ayrıntıda görünür.
+const lowData = (p) => p.confidence === "low"
+  ? ` · <span class="low-data" title="${int(p.minutes)} dakika: profil daha az güvenilir">Az veri</span>` : "";
 
 export function renderQuery(box, q) {
   box.innerHTML = `
     <h2><i class="mark a" aria-hidden="true"></i>${esc(q.name)}</h2>
     <p>${esc(q.team)} · ${esc(leagueName(q.league))}</p>
-    <p>${esc(groupName(q.position_group))} · ${q.age ?? "—"} yaş · ${money(q.market_value)}</p>`;
+    <p>${esc(groupName(q.position_group))} · ${q.age ?? "—"} yaş · ${money(q.market_value)}${lowData(q)}</p>`;
 }
 
 const row = (p, rank) => `
@@ -14,7 +18,7 @@ const row = (p, rank) => `
     <span>
       <span class="row-name">${esc(p.name)}</span>
       <span class="row-sub">${esc(p.team)} · ${esc(leagueName(p.league))}</span>
-      <span class="row-meta">${p.age ?? "—"} yaş · ${esc(p.positions[0] ?? "—")} · ${money(p.market_value)}</span>
+      <span class="row-meta">${p.age ?? "—"} yaş · ${esc(p.positions[0] ?? "—")} · ${money(p.market_value)}${lowData(p)}</span>
     </span>
     <span class="row-end">
       <i class="mark b" aria-hidden="true"></i>

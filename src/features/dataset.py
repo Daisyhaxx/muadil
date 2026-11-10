@@ -7,12 +7,14 @@ from .league_adjust import LEAGUE_WEIGHT, add_league_adjusted
 from .per90 import to_per90
 from .percentile import add_percentiles
 from .positions import add_position_group
+from .shrinkage import shrink_low_minutes
 from .team_adjust import POSSESSION_ELASTICITY, possession_adjusted
 
 SOFASCORE_DIR = paths.PROCESSED_DIR / "sofascore"
 TEAMS_DIR = paths.PROCESSED_DIR / "sofascore_teams"
 TEAM_KEYS = ["league", "season_year", "team_id"]
-MIN_MINUTES = 900
+MIN_MINUTES = 900     # referans: ölçek (ortalama, std, percentile) bu oyunculardan gelir
+FLOOR_MINUTES = 450   # aramaya girebilecek en az dakika; 450–899 dk düzeltilerek girer (`shrinkage.py`)
 
 
 def _read_year(directory, year: str) -> pd.DataFrame:
@@ -40,17 +42,29 @@ def add_age(df: pd.DataFrame, on: pd.Timestamp | None = None) -> pd.DataFrame:
     return df.assign(age=years.floordiv(1))
 
 
+def prepare_season(raw: pd.DataFrame, min_minutes: int) -> pd.DataFrame:
+    """Dakika eşiği, mevki grubu, yaş ve per-90 değerler."""
+    df = raw[raw.minutesPlayed >= min_minutes].reset_index(drop=True)
+    return to_per90(add_age(add_position_group(df)))
+
+
 def build_features(
     raw: pd.DataFrame,
     min_minutes: int = MIN_MINUTES,
     league_weight: float = LEAGUE_WEIGHT,
     possession_beta: float = POSSESSION_ELASTICITY,
+    floor: int | None = None,
+    stability: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
-    df = raw[raw.minutesPlayed >= min_minutes].reset_index(drop=True)
-    df = add_position_group(df)
-    df = add_age(df)
-    df = to_per90(df)
-    df = add_percentiles(df, STYLE_FIELDS)  # radar ve açıklamada gösterilen: ham per-90'dan
+    """`min_minutes`+ oyuncular referanstır (`is_reference`): ölçek onlardan gelir, değerleri değişmez.
+
+    `floor` verilirse tablo o dakikaya kadar iner; aradaki oyuncular `stability` ile düzeltilip referans ölçeğine oturur.
+    """
+    df = prepare_season(raw, min_minutes if floor is None else floor)
+    reference = df.minutesPlayed >= min_minutes
+    if stability is not None:
+        df = shrink_low_minutes(df, stability, reference)
+    df = add_percentiles(df, STYLE_FIELDS, reference=reference)  # radar ve açıklamada gösterilen: per-90'dan
     # Arama vektörleri: savunma alanları takım bağlamına göre, sonra log + lig farkı ½
     search_values = possession_adjusted(df, STYLE_FIELDS, possession_beta)
-    return add_league_adjusted(df, search_values, league_weight)
+    return add_league_adjusted(df, search_values, league_weight, reference=reference).assign(is_reference=reference)

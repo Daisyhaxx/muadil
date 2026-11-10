@@ -23,6 +23,8 @@ def player_summary(row: pd.Series) -> PlayerSummary:
         positions=list(positions) if positions is not None else [],
         age=int(age) if age is not None else None,
         minutes=int(row.minutesPlayed),
+        effective_minutes=int(row.effective_minutes),
+        confidence=row.confidence,
         market_value=_value(row.market_value),
         preferred_foot=_value(row.preferred_foot),
         contract_until=contract.date() if contract is not None else None,

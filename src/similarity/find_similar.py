@@ -7,7 +7,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from ..features.dataset import MIN_MINUTES
+from ..features.dataset import FLOOR_MINUTES
 from ..leagues import LEAGUE_NAMES
 from ..viz.radar import save_radar
 from .filters import Filters
@@ -21,7 +21,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("name", help="Oyuncu adı (aksan/büyük harf fark etmez)")
     p.add_argument("--year", default="25/26")
     p.add_argument("--top", type=int, default=10)
-    p.add_argument("--min-minutes", type=int, default=MIN_MINUTES)
+    p.add_argument("--min-minutes", type=int, default=FLOOR_MINUTES,
+                   help="Aramaya girebilecek en az dakika (900 altı düzeltilerek girer)")
     p.add_argument("--history", type=int, default=HISTORY_SEASONS,
                    help="Profile katılacak önceki sezon sayısı (0 = sadece --year)")
     p.add_argument("--max-age", type=int, help="Bu yaş dahil")
@@ -53,7 +54,7 @@ def main() -> int:
     matches = service.find(args.name)
     if len(matches) != 1:
         found = ", ".join(matches.player_name.head(10)) or "yok"
-        print(f"'{args.name}' için {len(matches)} eşleşme ({args.min_minutes}+ dk): {found}")
+        print(f"'{args.name}' için {len(matches)} eşleşme ({service.min_minutes}+ dk): {found}")
         return 1
 
     qi = matches.index[0]

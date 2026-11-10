@@ -4,7 +4,7 @@ import pandas as pd
 from .explain import common_and_different
 
 COLUMNS = ["player_name", "team_name", "league", "age", "positions_detailed",
-           "minutesPlayed", "market_value_m", "similarity"]
+           "minutesPlayed", "market_value_m", "similarity", "confidence"]
 
 
 def results_table(df: pd.DataFrame) -> str:

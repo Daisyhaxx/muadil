@@ -1,22 +1,31 @@
 """Arama servisi: özellik tablosunu ve profili bir kez kurar, mevki vektörlerini önbellekler. CLI ve API ortak kullanır."""
 import pandas as pd
 
-from ..features.dataset import MIN_MINUTES, build_features, load_season
+from ..features.dataset import FLOOR_MINUTES, MIN_MINUTES, build_features, load_season, prepare_season
+from ..features.shrinkage import stability_points
+from .confidence import confidence
 from .engine import search
 from .explain import explain
 from .filters import Filters
 from .lookup import find_players
-from .profile import DECAY, HISTORY_SEASONS, blended_percentiles, group_vectors, load_history
+from .profile import DECAY, HISTORY_SEASONS, blended_percentiles, effective_minutes, group_vectors, load_history
 
 
 class SimilarityService:
-    def __init__(self, year: str = "25/26", min_minutes: int = MIN_MINUTES, history_seasons: int = HISTORY_SEASONS):
+    def __init__(self, year: str = "25/26", min_minutes: int = FLOOR_MINUTES, history_seasons: int = HISTORY_SEASONS):
         self.year = year
-        self.min_minutes = min_minutes
         self.decay = DECAY
-        self.features = build_features(load_season(year), min_minutes)
-        self.history = load_history(year, history_seasons, min_minutes)
-        self.percentiles = blended_percentiles(self.features, list(self.history.values()), self.decay)
+        reference = max(min_minutes, MIN_MINUTES)
+        raw = load_season(year)
+        self.history = load_history(year, history_seasons, reference)
+        past = list(self.history.values())
+        # Önceki sezon yoksa kararlılık ölçülemez; az dakikalılar düzeltilemeyeceği için alınmaz
+        stability = stability_points(past[0], prepare_season(raw, reference)) if past else None
+        self.min_minutes = min_minutes if past else reference
+        features = build_features(raw, reference, floor=self.min_minutes, stability=stability)
+        effective = effective_minutes(features, past, self.decay)
+        self.features = features.assign(effective_minutes=effective, confidence=confidence(effective))
+        self.percentiles = blended_percentiles(self.features, past, self.decay)
         self._vectors: dict[str, pd.DataFrame] = {}
 
     @property

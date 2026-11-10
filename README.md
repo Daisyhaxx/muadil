@@ -6,7 +6,8 @@ daha ucuz olanları. Filtreler: yaş, lig, piyasa değeri, sözleşme, ayak.
 
 Veri: Sofascore'un oyuncu sezon istatistikleri. 6 lig (Süper Lig, TFF 1. Lig, Premier League, Eredivisie,
 Primeira Liga, Belçika Pro League) × 3 sezon (23/24, 24/25, 25/26). Lig-sezon başına ~400–500 oyuncu var, bunların
-900+ dakika oynayanları kullanılıyor. **Veri ve veri çekme kodu bu repoda yok**; burada modelleme, değerlendirme,
+450+ dakika oynayanları aranıyor; 900 dakikanın altındakiler düzeltilerek giriyor ve sonuçta "az veri" diye işaretleniyor.
+**Veri ve veri çekme kodu bu repoda yok**; burada modelleme, değerlendirme,
 API ve arayüz kodu ile türetilmiş sonuçlar (değerlendirme tabloları) paylaşılıyor. Beklenen veri formatı aşağıda.
 
 ## Çalıştırma
@@ -25,6 +26,7 @@ python -m src.eval.run_eval --out results/retrieval_eval.md
 python -m src.eval.history_eval --out results/history_eval.md   # çok sezonlu profil
 python -m src.eval.league_eval --out results/league_eval.md     # lig farkı düzeltmesi (α)
 python -m src.eval.team_eval --out results/team_eval.md         # topa sahip olma düzeltmesi (β)
+python -m src.eval.shrinkage_eval --out results/shrinkage_eval.md  # az dakikalı oyuncular
 ```
 
 ### Veri formatı
@@ -48,8 +50,9 @@ Takım tablosu, aynı adla `~/player-data/processed/sofascore_teams/` altında: 
 
 ## Yöntem
 
-1. Sayım istatistikleri 90 dakikaya bölünür (oran alanları olduğu gibi kalır). 900 dakikanın altı elenir.
-   **Savunma aksiyonları takımın topa sahip olma oranına göre düzeltilir:** müdahale, pas arası, uzaklaştırma,
+1. Sayım istatistikleri 90 dakikaya bölünür (oran alanları olduğu gibi kalır). 450 dakikanın altı elenir; 450–899 dk
+   oynayanların değerleri mevki ortalamasına doğru çekilir (`src/features/shrinkage.py`; aşağıda, Az dakikalı oyuncular).
+   Ölçek hep 900+ dk oynayanlardan gelir, onların değerleri değişmez. **Savunma aksiyonları takımın topa sahip olma oranına göre düzeltilir:** müdahale, pas arası, uzaklaştırma,
    top kazanma vb. × (0,5 / (1 − p))^0,3 (p = takımın topa sahip olma oranı). Rakibi topu çok tutan takımın
    oyuncusu sırf bu yüzden daha çok müdahale eder. Üs 0,3 veriden ölçüldü; standart düzeltme (üs 1) etkiyi ~3 kat
    abartıyor (`src/features/team_adjust.py`; aşağıda, Takım etkisi).
@@ -299,6 +302,44 @@ olmasın diye). 3 sezon verisiyle test edilebilen tek çift 24/25 → 25/26 (ge�
 - 3 sezonluk profil test edilmedi (22/23 verisi yok).
 - Kullanımda adayların profili de iki sezonluk. Test sadece sorgu tarafını ölçüyor (aday tarafında N+1'in
   geçmişi N olurdu, bu da sızıntı demek). Aday tarafında da aynı kazancın olduğu varsayılıyor.
+
+### Az dakikalı oyuncular
+
+900 dakika eşiği aranan gençleri eliyordu: 25/26'da 450–899 dk oynayan 513 oyuncunun 184'ü 23 yaş ve altı. Bu oyuncular
+gürültülü olduğu için değerleri mevki ortalamasına doğru çekiliyor: x̂ = w·x + (1 − w)·μ, w = m / (m + c·k). k alanın
+kararlılık noktası: 900+ dk oyuncuların iki sezon arasındaki korelasyondan (r = m / (m + k)). Hava topu ~500 dk'da
+otururken gol ~2300 dk ister. c = ¼. Çıktı: [`results/shrinkage_eval.md`](results/shrinkage_eval.md).
+
+| Test (havuz: hedefin ligi) | n | Düzeltme yok (MRR) | Tek k (fark) | Alan bazlı k × ¼ (MRR) | Alan bazlı k × ¼ (fark) |
+|---|---:|---:|---:|---:|---:|
+| A · Sorgu 450–899 dk → hedef 900+ | 296 | 0.398 | -0.017 [-0.039, +0.005] | 0.436 | +0.038 [+0.017, +0.058] |
+| B · Sorgu 900+ → hedef 450–899 dk | 295 | 0.328 | +0.004 [-0.014, +0.022] | 0.406 | +0.078 [+0.055, +0.101] |
+| C · Sorgu 900+ → hedef 900+, havuz 450+ | 1961 | 0.564 | -0.009 [-0.013, -0.005] | 0.558 | -0.007 [-0.010, -0.004] |
+| A2 · Sorgu 300–449 dk → hedef 900+ | 62 | 0.366 | -0.122 [-0.191, -0.061] | 0.374 | +0.008 [-0.040, +0.054] |
+| B2 · Sorgu 900+ → hedef 300–449 dk | 88 | 0.300 | -0.025 [-0.060, +0.010] | 0.365 | +0.065 [+0.025, +0.110] |
+
+- Asıl kullanım B: az oynamış adayı bulmak. Düzeltme MRR'ı 0.328'den 0.406'ya çıkarıyor.
+- **Tek k işe yaramıyor.** Bütün vektörü aynı oranda küçültür, cosine de ölçeği sildiği için yön değişmez. Kazanç,
+  gürültülü alanların (gol) kararlı alanlara (hava topu) göre daha çok bastırılmasından geliyor.
+- k × ¼, k × ½ ve k × 1 A ve B'de birbirine yakın; ¼ seçildi çünkü C'de en az zararı veriyor. Sezonlar arası korelasyon
+  oyuncunun gerçek değişimini de içerdiği için k gürültüyü olduğundan büyük gösteriyor.
+- C: Havuza 513 oyuncu daha girince 900+ oyuncuları bulmak doğal olarak biraz zorlaşıyor (0.585 → 0.558). 900+ oyuncuların
+  kendi vektörleri ve percentile'ları değişmedi. Az dakikalılar ilk sıraları haksız doldurmuyor: havuzun %22'si, ilk
+  10'un %18,5'i.
+- Alt eşik 450: 300–449 dk için örnek az (62 ve 88) ve sorgu tarafında kazanç yok.
+- Örneklem seçilmiş: A'da az oynadıktan sonra sıradaki sezon 900+ oynayanlar var, B'de tersi. Hiç şans bulamayanlar test dışı.
+
+Sonuçtaki güven göstergesi efektif dakikaya (güncel + önceki sezon × 0,5) bağlı. Eşikler bu tablodan (sorgu 24/25, iki
+sezonlu profil, hedef 25/26, havuz 900+): **düşük** < 900, **orta** 900–1799, **yüksek** 1800+.
+
+| Efektif dakika | n | MRR | R@10 |
+|---|---:|---:|---:|
+| 450–699 | 60 | 0.431 | 75.0% |
+| 700–899 | 37 | 0.467 | 78.4% |
+| 900–1199 | 67 | 0.493 | 80.6% |
+| 1200–1799 | 187 | 0.519 | 82.9% |
+| 1800–2699 | 285 | 0.583 | 86.7% |
+| 2700+ | 493 | 0.646 | 92.1% |
 
 ### Testin sınırları
 

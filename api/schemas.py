@@ -1,5 +1,6 @@
 """API cevap modelleri."""
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -13,6 +14,8 @@ class PlayerSummary(BaseModel):
     positions: list[str]
     age: int | None
     minutes: int
+    effective_minutes: int      # güncel sezon + önceki sezon × 0,5
+    confidence: Literal["low", "medium", "high"]  # profilin güveni (efektif dakikadan)
     market_value: float | None  # €
     preferred_foot: str | None
     contract_until: date | None

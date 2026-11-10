@@ -20,18 +20,21 @@ LEAGUE_WEIGHT = 0.5  # α
 
 
 def add_league_adjusted(
-    df: pd.DataFrame, values: pd.DataFrame, alpha: float = LEAGUE_WEIGHT, prefix: str = PREFIX
+    df: pd.DataFrame, values: pd.DataFrame, alpha: float = LEAGUE_WEIGHT, prefix: str = PREFIX,
+    reference: pd.Series | None = None,
 ) -> pd.DataFrame:
     """`values` (per-90, sütun = alan adı, df ile aynı indeks) → df'e `<prefix><alan>` sütunları.
 
     Grup anahtarları df'ten alınır. NaN (ligde veri yok, örn. TFF'de xG) NaN kalır.
+    `reference` verilirse ortalamalar sadece bu oyunculardan hesaplanır.
     """
     fields = list(values.columns)
     x = values.astype(float).copy()
     counts = [f for f in fields if f not in PERCENT_FIELDS]
     x[counts] = np.log1p(x[counts])
-    league_mean = x.groupby([df[k] for k in GROUP_KEYS]).transform("mean")
-    pool_mean = x.groupby([df[k] for k in POOL_KEYS]).transform("mean")
+    basis = x if reference is None else x.where(reference)
+    league_mean = basis.groupby([df[k] for k in GROUP_KEYS]).transform("mean")
+    pool_mean = basis.groupby([df[k] for k in POOL_KEYS]).transform("mean")
     adjusted = x - alpha * (league_mean - pool_mean)
     adjusted.columns = pct_columns(fields, prefix)
     return pd.concat([df, adjusted], axis=1)
